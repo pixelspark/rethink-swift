@@ -57,6 +57,11 @@ class RethinkTests: XCTestCase {
 		R.dbCreate(databaseName).run(connection) { (response) in
 			XCTAssert(!response.isError, "Failed to create database: \(response)")
 
+			R.dbList().run(self.connection) { (response) in
+				XCTAssert(!response.isError, "Failed to dbList: \(response)")
+				XCTAssert(response.value is NSArray && (response.value as! NSArray).containsObject(databaseName), "Created database not listed in response")
+			}
+
 			R.db(databaseName).tableCreate(tableName).run(self.connection) { (response) in
 				XCTAssert(!response.isError, "Failed to create table: \(response)")
 

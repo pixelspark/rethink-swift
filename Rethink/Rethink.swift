@@ -24,32 +24,10 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE. **/
 import Foundation
 
-private protocol ReExpression {
-	var jsonSerialization: AnyObject { get }
-}
-
 public typealias ReDatum = AnyObject
 public typealias ReDocument = [String: ReDatum]
 
-public class R {
-	public static func uuid() -> ReQuery {
-		return ReQuery(jsonSerialization: [ReTerm.UUID.rawValue])
-	}
-
-	public static func db(name: String) -> ReQueryDatabase {
-		return ReQueryDatabase(name: name)
-	}
-
-	public static func dbCreate(name: String) -> ReQuery {
-		return ReQuery(jsonSerialization: [ReTerm.DB_CREATE.rawValue, [name]])
-	}
-
-	public static func dbDrop(name: String) -> ReQuery {
-		return ReQuery(jsonSerialization: [ReTerm.DB_DROP.rawValue, [name]])
-	}
-}
-
-public class ReQuery: ReExpression {
+public class ReQuery {
 	public typealias Callback = (ReResponse) -> ()
 
 	private var jsonSerialization: AnyObject
@@ -73,6 +51,38 @@ public class ReQuery: ReExpression {
 	}
 }
 
+public class ReQueryValue: ReQuery {
+}
+
+public class ReQueryPoint: ReQueryValue {
+}
+
+public class R {
+	public static func uuid() -> ReQuery {
+		return ReQuery(jsonSerialization: [ReTerm.UUID.rawValue])
+	}
+
+	public static func db(name: String) -> ReQueryDatabase {
+		return ReQueryDatabase(name: name)
+	}
+
+	public static func dbCreate(name: String) -> ReQuery {
+		return ReQuery(jsonSerialization: [ReTerm.DB_CREATE.rawValue, [name]])
+	}
+
+	public static func dbDrop(name: String) -> ReQuery {
+		return ReQuery(jsonSerialization: [ReTerm.DB_DROP.rawValue, [name]])
+	}
+
+	public static func dbList() -> ReQuerySequence {
+		return ReQuerySequence(jsonSerialization: [ReTerm.DB_LIST.rawValue,])
+	}
+
+	public static func point(longitude: Double, latitude: Double) -> ReQueryPoint {
+		return ReQueryPoint(jsonSerialization: [ReTerm.POINT.rawValue, [longitude, latitude]])
+	}
+}
+
 public class ReQueryDatabase: ReQuery {
 	private init(name: String) {
 		super.init(jsonSerialization: [ReTerm.DB.rawValue, [name]])
@@ -89,11 +99,56 @@ public class ReQueryDatabase: ReQuery {
 	public func tableDrop(name: String) -> ReQuery {
 		return ReQuery(jsonSerialization: [ReTerm.TABLE_DROP.rawValue, [self.jsonSerialization, name]])
 	}
+
+	public func tableList() -> ReQuerySequence {
+		return ReQuerySequence(jsonSerialization: [ReTerm.TABLE_LIST.rawValue])
+	}
+
+	public func wait() -> ReQuery {
+		return ReQuery(jsonSerialization: [ReTerm.WAIT.rawValue, [self.jsonSerialization]])
+	}
+
+	public func rebalance() -> ReQuery {
+		return ReQuery(jsonSerialization: [ReTerm.REBALANCE.rawValue, [self.jsonSerialization]])
+	}
 }
 
 public class ReQuerySequence: ReQuery {
 	public func count() -> ReQuery {
 		return ReQuery(jsonSerialization: [ReTerm.COUNT.rawValue, [self.jsonSerialization]])
+	}
+
+	public func limit(count: Int) -> ReQueryStream {
+		return ReQueryStream(jsonSerialization: [ReTerm.LIMIT.rawValue, [self.jsonSerialization, count]])
+	}
+
+	public func skip(count: Int) -> ReQueryStream {
+		return ReQueryStream(jsonSerialization: [ReTerm.SKIP.rawValue, [self.jsonSerialization, count]])
+	}
+
+	public func nth(index: Int) -> ReQuery {
+		return ReQuery(jsonSerialization: [ReTerm.NTH.rawValue, [self.jsonSerialization, index]])
+	}
+
+	public func isEmpty() -> ReQuery {
+		return ReQuery(jsonSerialization: [ReTerm.IS_EMPTY.rawValue, [self.jsonSerialization]])
+	}
+}
+
+public class ReQuerySelection: ReQuerySequence {
+}
+
+public class ReQueryStream: ReQuerySequence {
+	public func changes() -> ReQueryStream {
+		return ReQueryStream(jsonSerialization: [ReTerm.CHANGES.rawValue, [self.jsonSerialization]])
+	}
+
+	public func zip() -> ReQueryStream {
+		return ReQueryStream(jsonSerialization: [ReTerm.ZIP.rawValue, [self.jsonSerialization]])
+	}
+
+	public func sample(count: Int) -> ReQueryStream {
+		return ReQueryStream(jsonSerialization: [ReTerm.SAMPLE.rawValue, [self.jsonSerialization, count]])
 	}
 }
 
@@ -108,6 +163,42 @@ public class ReQueryTable: ReQuerySequence {
 
 	public func indexWait() -> ReQuery {
 		return ReQuery(jsonSerialization: [ReTerm.INDEX_WAIT.rawValue, [self.jsonSerialization]])
+	}
+
+	public func indexDrop(name: String) -> ReQuery {
+		return ReQuery(jsonSerialization: [ReTerm.INDEX_DROP.rawValue, [self.jsonSerialization, name]])
+	}
+
+	public func indexList() -> ReQuerySequence {
+		return ReQuerySequence(jsonSerialization: [ReTerm.INDEX_LIST.rawValue, [self.jsonSerialization]])
+	}
+
+	public func indexRename(renameIndex: String, to: String) -> ReQuery {
+		return ReQuery(jsonSerialization: [ReTerm.INDEX_RENAME.rawValue, [self.jsonSerialization, renameIndex, to]])
+	}
+
+	public func indexStatus() -> ReQuery {
+		return ReQuery(jsonSerialization: [ReTerm.INDEX_STATUS.rawValue, [self.jsonSerialization]])
+	}
+
+	public func status() -> ReQuerySelection {
+		return ReQuerySelection(jsonSerialization: [ReTerm.STATUS.rawValue, [self.jsonSerialization]])
+	}
+
+	public func sync() -> ReQuery {
+		return ReQuery(jsonSerialization: [ReTerm.SYNC.rawValue, [self.jsonSerialization]])
+	}
+
+	public func wait() -> ReQuery {
+		return ReQuery(jsonSerialization: [ReTerm.WAIT.rawValue, [self.jsonSerialization]])
+	}
+
+	public func get(primaryKey: AnyObject) -> ReQuery {
+		return ReQuery(jsonSerialization: [ReTerm.GET.rawValue, [self.jsonSerialization, primaryKey]])
+	}
+
+	public func rebalance() -> ReQuery {
+		return ReQuery(jsonSerialization: [ReTerm.REBALANCE.rawValue, [self.jsonSerialization]])
 	}
 }
 
