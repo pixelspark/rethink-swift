@@ -323,6 +323,14 @@ public class ReQuerySequence: ReQuery {
 	public func isEmpty() -> ReQuery {
 		return ReQuery(jsonSerialization: [ReTerm.IS_EMPTY.rawValue, [self.jsonSerialization]])
 	}
+
+	public func filter(specification: [String: ReQueryValue]) -> ReQuerySequence {
+		var serialized: [String: AnyObject] = [:]
+		for (k, v) in specification {
+			serialized[k] = v.jsonSerialization
+		}
+		return ReQuerySequence(jsonSerialization: [ReTerm.FILTER.rawValue, [self.jsonSerialization, serialized]])
+	}
 }
 
 public class ReQuerySelection: ReQuerySequence {
