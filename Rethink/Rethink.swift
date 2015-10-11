@@ -27,6 +27,76 @@ import Foundation
 public typealias ReDatum = AnyObject
 public typealias ReDocument = [String: ReDatum]
 
+public class R {
+	public static func uuid() -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.UUID.rawValue])
+	}
+
+	public static func db(name: String) -> ReQueryDatabase {
+		return ReQueryDatabase(name: name)
+	}
+
+	public static func dbCreate(name: String) -> ReQuery {
+		return ReQuery(jsonSerialization: [ReTerm.DB_CREATE.rawValue, [name]])
+	}
+
+	public static func dbDrop(name: String) -> ReQuery {
+		return ReQuery(jsonSerialization: [ReTerm.DB_DROP.rawValue, [name]])
+	}
+
+	public static func dbList() -> ReQuerySequence {
+		return ReQuerySequence(jsonSerialization: [ReTerm.DB_LIST.rawValue,])
+	}
+
+	public static func point(longitude: Double, latitude: Double) -> ReQueryPoint {
+		return ReQueryPoint(longitude: longitude, latitude:latitude)
+	}
+
+	public static func expr(string: String) -> ReQueryValue {
+		return ReQueryValue(string: string)
+	}
+
+	public static func expr(double: Double) -> ReQueryValue {
+		return ReQueryValue(double: double)
+	}
+
+	public static func expr(bool: Bool) -> ReQueryValue {
+		return ReQueryValue(bool: bool)
+	}
+
+	public static func expr(array: [ReQueryValue]) -> ReQueryValue {
+		return ReQueryValue(array: array)
+	}
+
+	public static func not(value: ReQueryValue) -> ReQueryValue {
+		return value.not()
+	}
+
+	public static func random(lower: Int, _ upperOpen: Int) -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.RANDOM.rawValue, [lower, upperOpen]])
+	}
+
+	public static func random(lower: Double, _ upperOpen: Double) -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.RANDOM.rawValue, [lower, upperOpen], ["float": true]])
+	}
+
+	public static func random() -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.RANDOM.rawValue, []])
+	}
+
+	public static func round(value: ReQueryValue) -> ReQueryValue {
+		return value.round()
+	}
+
+	public static func ceil(value: ReQueryValue) -> ReQueryValue {
+		return value.ceil()
+	}
+
+	public static func floor(value: ReQueryValue) -> ReQueryValue {
+		return value.floor()
+	}
+}
+
 public class ReQuery {
 	public typealias Callback = (ReResponse) -> ()
 
@@ -52,34 +122,154 @@ public class ReQuery {
 }
 
 public class ReQueryValue: ReQuery {
+	private init(string: String) {
+		super.init(jsonSerialization: string)
+	}
+
+	private init(double: Double) {
+		super.init(jsonSerialization: double)
+	}
+
+	private init(bool: Bool) {
+		super.init(jsonSerialization: bool)
+	}
+
+	private init(array: [ReQueryValue]) {
+		super.init(jsonSerialization: [ReTerm.MAKE_ARRAY.rawValue, array.map { return $0.jsonSerialization }])
+	}
+
+	private override init(jsonSerialization: AnyObject) {
+		super.init(jsonSerialization: jsonSerialization)
+	}
+
+	public func add(value: ReQueryValue) -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.ADD.rawValue, [self.jsonSerialization, value.jsonSerialization]])
+	}
+
+	public func sub(value: ReQueryValue) -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.SUB.rawValue, [self.jsonSerialization, value.jsonSerialization]])
+	}
+
+	public func mul(value: ReQueryValue) -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.MUL.rawValue, [self.jsonSerialization, value.jsonSerialization]])
+	}
+
+	public func div(value: ReQueryValue) -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.DIV.rawValue, [self.jsonSerialization, value.jsonSerialization]])
+	}
+
+	public func mod(value: ReQueryValue) -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.MOD.rawValue, [self.jsonSerialization, value.jsonSerialization]])
+	}
+
+	public func and(value: ReQueryValue) -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.AND.rawValue, [self.jsonSerialization, value.jsonSerialization]])
+	}
+
+	public func or(value: ReQueryValue) -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.OR.rawValue, [self.jsonSerialization, value.jsonSerialization]])
+	}
+
+	public func eq(value: ReQueryValue) -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.EQ.rawValue, [self.jsonSerialization, value.jsonSerialization]])
+	}
+
+	public func ne(value: ReQueryValue) -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.NE.rawValue, [self.jsonSerialization, value.jsonSerialization]])
+	}
+
+	public func gt(value: ReQueryValue) -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.GT.rawValue, [self.jsonSerialization, value.jsonSerialization]])
+	}
+
+	public func ge(value: ReQueryValue) -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.GE.rawValue, [self.jsonSerialization, value.jsonSerialization]])
+	}
+
+	public func lt(value: ReQueryValue) -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.LT.rawValue, [self.jsonSerialization, value.jsonSerialization]])
+	}
+
+	public func le(value: ReQueryValue) -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.LE.rawValue, [self.jsonSerialization, value.jsonSerialization]])
+	}
+
+	public func not() -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.NOT.rawValue, [self.jsonSerialization]])
+	}
+
+	public func round() -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.ROUND.rawValue, [self.jsonSerialization]])
+	}
+
+	public func ceil() -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.CEIL.rawValue, [self.jsonSerialization]])
+	}
+
+	public func floor() -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.FLOOR.rawValue, [self.jsonSerialization]])
+	}
+}
+
+public func +(lhs: ReQueryValue, rhs: ReQueryValue) -> ReQueryValue {
+	return lhs.add(rhs)
+}
+
+public func -(lhs: ReQueryValue, rhs: ReQueryValue) -> ReQueryValue {
+	return lhs.sub(rhs)
+}
+
+public func *(lhs: ReQueryValue, rhs: ReQueryValue) -> ReQueryValue {
+	return lhs.mul(rhs)
+}
+
+public func /(lhs: ReQueryValue, rhs: ReQueryValue) -> ReQueryValue {
+	return lhs.div(rhs)
+}
+
+public func %(lhs: ReQueryValue, rhs: ReQueryValue) -> ReQueryValue {
+	return lhs.mod(rhs)
+}
+
+public func &&(lhs: ReQueryValue, rhs: ReQueryValue) -> ReQueryValue {
+	return lhs.and(rhs)
+}
+
+public func ||(lhs: ReQueryValue, rhs: ReQueryValue) -> ReQueryValue {
+	return lhs.or(rhs)
+}
+
+public func ==(lhs: ReQueryValue, rhs: ReQueryValue) -> ReQueryValue {
+	return lhs.eq(rhs)
+}
+
+public func !=(lhs: ReQueryValue, rhs: ReQueryValue) -> ReQueryValue {
+	return lhs.ne(rhs)
+}
+
+public func >(lhs: ReQueryValue, rhs: ReQueryValue) -> ReQueryValue {
+	return lhs.gt(rhs)
+}
+
+public func >=(lhs: ReQueryValue, rhs: ReQueryValue) -> ReQueryValue {
+	return lhs.ge(rhs)
+}
+
+public func <(lhs: ReQueryValue, rhs: ReQueryValue) -> ReQueryValue {
+	return lhs.lt(rhs)
+}
+
+public func <=(lhs: ReQueryValue, rhs: ReQueryValue) -> ReQueryValue {
+	return lhs.le(rhs)
+}
+
+public prefix func !(lhs: ReQueryValue) -> ReQueryValue {
+	return lhs.not()
 }
 
 public class ReQueryPoint: ReQueryValue {
-}
-
-public class R {
-	public static func uuid() -> ReQuery {
-		return ReQuery(jsonSerialization: [ReTerm.UUID.rawValue])
-	}
-
-	public static func db(name: String) -> ReQueryDatabase {
-		return ReQueryDatabase(name: name)
-	}
-
-	public static func dbCreate(name: String) -> ReQuery {
-		return ReQuery(jsonSerialization: [ReTerm.DB_CREATE.rawValue, [name]])
-	}
-
-	public static func dbDrop(name: String) -> ReQuery {
-		return ReQuery(jsonSerialization: [ReTerm.DB_DROP.rawValue, [name]])
-	}
-
-	public static func dbList() -> ReQuerySequence {
-		return ReQuerySequence(jsonSerialization: [ReTerm.DB_LIST.rawValue,])
-	}
-
-	public static func point(longitude: Double, latitude: Double) -> ReQueryPoint {
-		return ReQueryPoint(jsonSerialization: [ReTerm.POINT.rawValue, [longitude, latitude]])
+	init(longitude: Double, latitude: Double) {
+		super.init(jsonSerialization: [ReTerm.POINT.rawValue, [longitude, latitude]])
 	}
 }
 
