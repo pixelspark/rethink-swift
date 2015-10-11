@@ -398,6 +398,10 @@ public class ReQueryTable: ReQuerySequence {
 	public func rebalance() -> ReQuery {
 		return ReQuery(jsonSerialization: [ReTerm.REBALANCE.rawValue, [self.jsonSerialization]])
 	}
+
+	public func between(lower: ReQueryValue, _ upper: ReQueryValue) -> ReQuerySequence {
+		return ReQuerySequence(jsonSerialization: [ReTerm.BETWEEN.rawValue, [self.jsonSerialization, lower.jsonSerialization, upper.jsonSerialization]])
+	}
 }
 
 private enum ReQueryType: Int {
