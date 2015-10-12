@@ -110,6 +110,10 @@ public class R {
 	public static func ISO8601(date: String) -> ReQueryValue {
 		return ReQueryValue(jsonSerialization: [ReTerm.ISO8601.rawValue, [date]])
 	}
+
+	public static func error(message: String) -> ReQuery {
+		return ReQuery(jsonSerialization: [ReTerm.ERROR.rawValue, [message]])
+	}
 }
 
 public class ReQuery {
