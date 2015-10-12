@@ -24,8 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE. **/
 import Foundation
 
-public typealias ReDatum = AnyObject
-public typealias ReDocument = [String: ReDatum]
+public typealias ReDocument = [String: AnyObject]
 
 public class R {
 	public static func uuid() -> ReQueryValue {
@@ -53,19 +52,27 @@ public class R {
 	}
 
 	public static func expr(string: String) -> ReQueryValue {
-		return ReQueryValue(string: string)
+		return ReDatum(string: string)
 	}
 
 	public static func expr(double: Double) -> ReQueryValue {
-		return ReQueryValue(double: double)
+		return ReDatum(double: double)
+	}
+
+	public static func expr(binary: NSData) -> ReQueryValue {
+		return ReDatum(data: binary)
+	}
+
+	public static func expr(date: NSDate) -> ReQueryValue {
+		return ReDatum(date: date)
 	}
 
 	public static func expr(bool: Bool) -> ReQueryValue {
-		return ReQueryValue(bool: bool)
+		return ReDatum(bool: bool)
 	}
 
 	public static func expr(array: [ReQueryValue]) -> ReQueryValue {
-		return ReQueryValue(array: array)
+		return ReQueryValue(jsonSerialization: [ReTerm.MAKE_ARRAY.rawValue, array.map { return $0.jsonSerialization }])
 	}
 
 	public static func not(value: ReQueryValue) -> ReQueryValue {
@@ -95,6 +102,14 @@ public class R {
 	public static func floor(value: ReQueryValue) -> ReQueryValue {
 		return value.floor()
 	}
+
+	public static func now() -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.NOW.rawValue])
+	}
+
+	public static func ISO8601(date: String) -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.ISO8601.rawValue, [date]])
+	}
 }
 
 public class ReQuery {
@@ -122,26 +137,6 @@ public class ReQuery {
 }
 
 public class ReQueryValue: ReQuery {
-	private init(string: String) {
-		super.init(jsonSerialization: string)
-	}
-
-	private init(double: Double) {
-		super.init(jsonSerialization: double)
-	}
-
-	private init(bool: Bool) {
-		super.init(jsonSerialization: bool)
-	}
-
-	private init(array: [ReQueryValue]) {
-		super.init(jsonSerialization: [ReTerm.MAKE_ARRAY.rawValue, array.map { return $0.jsonSerialization }])
-	}
-
-	private override init(jsonSerialization: AnyObject) {
-		super.init(jsonSerialization: jsonSerialization)
-	}
-
 	public func add(value: ReQueryValue) -> ReQueryValue {
 		return ReQueryValue(jsonSerialization: [ReTerm.ADD.rawValue, [self.jsonSerialization, value.jsonSerialization]])
 	}
@@ -209,6 +204,73 @@ public class ReQueryValue: ReQuery {
 	public func floor() -> ReQueryValue {
 		return ReQueryValue(jsonSerialization: [ReTerm.FLOOR.rawValue, [self.jsonSerialization]])
 	}
+
+	public func toEpochTime() -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.TO_EPOCH_TIME.rawValue, [self.jsonSerialization]])
+	}
+}
+
+public class ReDatum: ReQueryValue {
+	private static let reqlTypeTime = "TIME"
+	private static let reqlTypeBinary = "BINARY"
+	private static let reqlSpecialKey = "$reql_type$"
+
+	private init(string: String) {
+		super.init(jsonSerialization: string)
+	}
+
+	private init(double: Double) {
+		super.init(jsonSerialization: double)
+	}
+
+	private init(bool: Bool) {
+		super.init(jsonSerialization: bool)
+	}
+
+	private init(array: [ReQueryValue]) {
+		super.init(jsonSerialization: [ReTerm.MAKE_ARRAY.rawValue, array.map { return $0.jsonSerialization }])
+	}
+
+	private init(date: NSDate) {
+		super.init(jsonSerialization: [ReDatum.reqlSpecialKey: ReDatum.reqlTypeTime, "epoch_time": date.timeIntervalSince1970, "timezone": "+00:00"])
+	}
+
+	private init(data: NSData) {
+		super.init(jsonSerialization: [ReDatum.reqlSpecialKey: ReDatum.reqlTypeBinary, "data": data.base64EncodedStringWithOptions([])])
+	}
+
+	private override init(jsonSerialization: AnyObject) {
+		super.init(jsonSerialization: jsonSerialization)
+	}
+
+	private var value: AnyObject { get {
+		if let d = self.jsonSerialization as? [String: AnyObject], let t = d[ReDatum.reqlSpecialKey] as? String {
+			if t == ReDatum.reqlTypeBinary {
+				if let data = self.jsonSerialization.valueForKey("data") as? String {
+					return NSData(base64EncodedString: data, options: [])!
+				}
+				else {
+					assert(false, "invalid binary datum received")
+				}
+			}
+			else if t == ReDatum.reqlTypeTime {
+				if let epochTime = self.jsonSerialization.valueForKey("epoch_time"), let timezone = self.jsonSerialization.valueForKey("timezone") as? String {
+					// TODO: interpret server timezone other than +00:00 (UTC)
+					assert(timezone == "+00:00", "support for timezones other than UTC not implemented (yet)")
+					return NSDate(timeIntervalSince1970: epochTime.doubleValue!)
+				}
+				else {
+					assert(false, "invalid date received")
+				}
+			}
+			else {
+				assert(false, "unrecognized $reql_type$ in serialized data")
+			}
+		}
+		else {
+			return self.jsonSerialization
+		}
+	} }
 }
 
 public func +(lhs: ReQueryValue, rhs: ReQueryValue) -> ReQueryValue {
@@ -935,7 +997,7 @@ public enum ReResponse {
 	public typealias ContinuationCallback = (Callback) -> ()
 
 	case Error(String)
-	case Value(ReDatum)
+	case Value(AnyObject)
 	case Rows([ReDocument], ContinuationCallback?)
 	case Unknown
 
@@ -947,11 +1009,19 @@ public enum ReResponse {
 						case ReProtocol.responseTypeSuccessAtom:
 							guard let r = d.valueForKey("r") as? [AnyObject] else { return nil }
 							if r.count != 1 { return nil }
-							self = .Value(r.first!)
+							self = .Value(ReDatum(jsonSerialization: r.first!).value)
 
 						case ReProtocol.responseTypeSuccessPartial, ReProtocol.responseTypeSuccessSequence:
 							if let r = d.valueForKey("r") as? [ReDocument] {
-								self = .Rows(r, type.integerValue == ReProtocol.responseTypeSuccessPartial ? continuation : nil)
+								let deserialized = r.map { (document) -> ReDocument in
+									var dedoc: ReDocument = [:]
+									for (k, v) in document {
+										dedoc[k] = ReDatum(jsonSerialization: v).value
+									}
+									return dedoc
+								}
+
+								self = .Rows(deserialized, type.integerValue == ReProtocol.responseTypeSuccessPartial ? continuation : nil)
 							}
 							else {
 								return nil
@@ -996,7 +1066,7 @@ public enum ReResponse {
 		}
 	} }
 
-	public var value: ReDatum? { get {
+	public var value: AnyObject? { get {
 		switch self {
 			case .Value(let v):
 				return v

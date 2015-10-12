@@ -31,6 +31,17 @@ class RethinkTests: XCTestCase {
 			XCTAssert(!response.isError, "Failed to UUID: \(response)")
 		}
 
+		let date = NSDate()
+		R.expr(date).run(self.connection) { (response) in
+			XCTAssert(!response.isError && response.value is NSDate, "Failed to date: \(response)")
+			print(response)
+		}
+
+		R.now().run(self.connection) { (response) in
+			XCTAssert(!response.isError && response.value is NSDate, "Failed to date: \(response)")
+			print(response)
+		}
+
 		var outstanding = 100
 		var reader : ReResponse.Callback? = nil
 		reader = { (response) -> () in
