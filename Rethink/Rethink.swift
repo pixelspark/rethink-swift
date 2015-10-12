@@ -114,6 +114,22 @@ public class R {
 	public static func error(message: String) -> ReQuery {
 		return ReQuery(jsonSerialization: [ReTerm.ERROR.rawValue, [message]])
 	}
+
+	public static func branch(test: ReQuery, ifTrue: ReQuery, ifFalse: ReQuery) -> ReQuery {
+		return ReQuery(jsonSerialization: [ReTerm.BRANCH.rawValue, [test.jsonSerialization, ifTrue.jsonSerialization, ifFalse.jsonSerialization]])
+	}
+
+	public static func range(start: ReQueryValue, end: ReQueryValue) -> ReQuerySequence {
+		return ReQuerySequence(jsonSerialization: [ReTerm.RANGE.rawValue, [start, end]])
+	}
+
+	public static func js(source: String) -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.JAVASCRIPT.rawValue, [source]])
+	}
+
+	public static func json(source: String) -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.JSON.rawValue, [source]])
+	}
 }
 
 public class ReQuery {
@@ -137,6 +153,14 @@ public class ReQuery {
 		catch {
 			callback(ReResponse.Error("An unknown error occurred"))
 		}
+	}
+
+	public func typeOf() -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.TYPE_OF.rawValue, [self.jsonSerialization]])
+	}
+
+	public func info() -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.INFO.rawValue, [self.jsonSerialization]])
 	}
 }
 
@@ -211,6 +235,18 @@ public class ReQueryValue: ReQuery {
 
 	public func toEpochTime() -> ReQueryValue {
 		return ReQueryValue(jsonSerialization: [ReTerm.TO_EPOCH_TIME.rawValue, [self.jsonSerialization]])
+	}
+
+	public func defaults(value: ReQueryValue) -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.DEFAULT.rawValue, [self.jsonSerialization, value]])
+	}
+
+	public func toJSON() -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.TO_JSON_STRING.rawValue, [self.jsonSerialization]])
+	}
+
+	public func toJsonString() -> ReQueryValue {
+		return self.toJSON()
 	}
 }
 
