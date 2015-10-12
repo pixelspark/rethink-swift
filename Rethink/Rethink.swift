@@ -248,6 +248,10 @@ public class ReQueryValue: ReQuery {
 	public func toJsonString() -> ReQueryValue {
 		return self.toJSON()
 	}
+
+	public subscript(key: String) -> ReQueryValue {
+		return ReQueryValue(jsonSerialization: [ReTerm.BRACKET.rawValue, [self.jsonSerialization, key]])
+	}
 }
 
 public class ReDatum: ReQueryValue {
@@ -369,6 +373,24 @@ public prefix func !(lhs: ReQueryValue) -> ReQueryValue {
 	return lhs.not()
 }
 
+public typealias RePredicate = (ReQueryValue) -> (ReQuery)
+
+public class ReQueryLambda: ReQuery {
+	private static var parameterCounter = 0
+
+	init(block: RePredicate) {
+		let parameter = ReQueryValue(jsonSerialization: ++ReQueryLambda.parameterCounter)
+		let parameterAccess = ReQueryValue(jsonSerialization: [ReTerm.VAR.rawValue, [parameter.jsonSerialization]])
+
+		super.init(jsonSerialization: [
+				ReTerm.FUNC.rawValue, [
+						[ReTerm.MAKE_ARRAY.rawValue, [parameter.jsonSerialization]],
+						block(parameterAccess).jsonSerialization
+				]
+		])
+	}
+}
+
 public class ReQueryPoint: ReQueryValue {
 	init(longitude: Double, latitude: Double) {
 		super.init(jsonSerialization: [ReTerm.POINT.rawValue, [longitude, latitude]])
@@ -432,6 +454,16 @@ public class ReQuerySequence: ReQuery {
 			serialized[k] = v.jsonSerialization
 		}
 		return ReQuerySequence(jsonSerialization: [ReTerm.FILTER.rawValue, [self.jsonSerialization, serialized]])
+	}
+
+	public func filter(predicate: RePredicate) -> ReQuerySequence {
+		let fun = ReQueryLambda(block: predicate)
+		return ReQuerySequence(jsonSerialization: [ReTerm.FILTER.rawValue, [self.jsonSerialization, fun.jsonSerialization]])
+	}
+
+	public func forEach(block: RePredicate) -> ReQuerySequence {
+		let fun = ReQueryLambda(block: block)
+		return ReQuerySequence(jsonSerialization: [ReTerm.FOR_EACH.rawValue, [self.jsonSerialization, fun.jsonSerialization]])
 	}
 }
 

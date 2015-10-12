@@ -88,7 +88,7 @@ class RethinkTests: XCTestCase {
 					R.db(databaseName).table(tableName).insert(docs).run(self.connection) { (response) in
 						XCTAssert(!response.isError, "Failed to insert data: \(response)")
 
-						R.db(databaseName).table(tableName).filter(["foo": R.expr("bar")]).count().run(self.connection) { (response) in
+						R.db(databaseName).table(tableName).filter({ r in return r["foo"].eq(R.expr("bar")) }).count().run(self.connection) { (response) in
 							XCTAssert(!response.isError, "Failed to count: \(response)")
 							XCTAssert(response.value is NSNumber && (response.value as! NSNumber).integerValue == 1000, "Not all documents were inserted, or count is failing: \(response)")
 

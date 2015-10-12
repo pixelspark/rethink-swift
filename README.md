@@ -8,13 +8,13 @@ A Swift client driver for RethinkDB.
 ```swift
 let connection = try ReConnection(url: NSURL(string: "rethinkdb://localhost:28016")!) {
 	// Connected!
-	R.dbCreate(databaseName).run(connection) { (response) in
+	R.dbCreate(databaseName).run(connection) { response in
 		assert(!response.isError, "Failed to create database: \(response)")
 
-		R.db(databaseName).tableCreate(tableName).run(self.connection) { (response) in
+		R.db(databaseName).tableCreate(tableName).run(self.connection) { response in
 			assert(!response.isError, "Failed to create table: \(response)")
 
-			R.db(databaseName).table(tableName).indexWait().run(self.connection) { (response) in
+			R.db(databaseName).table(tableName).indexWait().run(self.connection) { response in
 				assert(!response.isError, "Failed to wait for index: \(response)")
 
 				// Insert 1000 documents
@@ -23,10 +23,14 @@ let connection = try ReConnection(url: NSURL(string: "rethinkdb://localhost:2801
 					docs.append(["foo": "bar", "id": i])
 				}
 
-				R.db(databaseName).table(tableName).insert(docs).run(self.connection) { (response) in
+				R.db(databaseName).table(tableName).insert(docs).run(self.connection) { response in
 					XCTAssert(!response.isError, "Failed to insert data: \(response)")
 
-					R.db(databaseName).table(tableName).count().run(self.connection) { (response) in
+					R.db(databaseName).table(tableName).filter({ r in return r["foo"].eq(R.expr("bar")) }).run(self.connection) { response in 
+						...
+					}
+
+					R.db(databaseName).table(tableName).count().run(self.connection) { response in
 						...
 					}
 				}
