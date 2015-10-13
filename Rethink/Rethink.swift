@@ -294,7 +294,7 @@ public class ReDatum: ReQueryValue {
 					return NSData(base64EncodedString: data, options: [])!
 				}
 				else {
-					assert(false, "invalid binary datum received")
+					fatalError("invalid binary datum received")
 				}
 			}
 			else if t == ReDatum.reqlTypeTime {
@@ -304,11 +304,11 @@ public class ReDatum: ReQueryValue {
 					return NSDate(timeIntervalSince1970: epochTime.doubleValue!)
 				}
 				else {
-					assert(false, "invalid date received")
+					fatalError("invalid date received")
 				}
 			}
 			else {
-				assert(false, "unrecognized $reql_type$ in serialized data")
+				fatalError("unrecognized $reql_type$ in serialized data")
 			}
 		}
 		else {
