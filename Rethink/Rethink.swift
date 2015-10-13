@@ -27,6 +27,12 @@ import Foundation
 public typealias ReDocument = [String: AnyObject]
 
 public class R {
+	public static func connect(url: NSURL, callback: (String?) -> ()) -> ReConnection {
+		let c = ReConnection(url: url)
+		c.connect(callback)
+		return c
+	}
+
 	public static func uuid() -> ReQueryValue {
 		return ReQueryValue(jsonSerialization: [ReTerm.UUID.rawValue])
 	}
@@ -1151,28 +1157,32 @@ public enum ReResponse {
 
 public class ReConnection: NSObject, NSStreamDelegate {
 	private typealias QueryToken = UInt64
-	let authenticationKey: String?
+	public let url: NSURL
+	public var authenticationKey: String? { get { return self.url.user } }
 
-	private let inStream: ReInputStream!
-	private let outStream: ReOutputStream!
+	private var inStream: ReInputStream! = nil
+	private var outStream: ReOutputStream! = nil
 	private var state: ReConnectionState = .Unconnected
 	private var outstandingQueries: [QueryToken: ReResponse.Callback] = [:]
-	private var onConnectedCallback: (() -> ())?
 
 	/** Create a connection to a RethinkDB instance. The URL should be of the form 'rethinkdb://host:port'. If
 	no port is given, the default port is used. If the server requires the use of an authentication key, put it
 	in the 'user' part of the URL, e.g. "rethinkdb://key@server:port". */
-	public init(url: NSURL, onConnectedCallback: (() -> ())? = nil) throws {
-		self.authenticationKey = url.user
-		self.onConnectedCallback = onConnectedCallback
+	private init(url: NSURL) {
+		self.url = url
+	}
+
+	private func connect(callback: (String?) -> ()) {
+		assert(!self.state.connected)
+
 		let port = (url.port ?? ReProtocol.defaultPort).integerValue
 		assert(port < 65536)
 
 		guard let hostname = url.host else {
 			self.inStream = nil
 			self.outStream = nil
-			super.init()
-			throw ReError.Fatal("Invalid URL")
+			callback("Invalid URL")
+			return
 		}
 
 		// Create a pair of streams to read/write to the database
@@ -1183,30 +1193,33 @@ public class ReConnection: NSObject, NSStreamDelegate {
 		if let r = readStream, w = writeStream {
 			let inStream: NSInputStream = r.takeRetainedValue()
 			let outStream: NSOutputStream = w.takeRetainedValue()
-			inStream.scheduleInRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
-			outStream.scheduleInRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
+
+			inStream.scheduleInRunLoop(NSRunLoop.mainRunLoop(), forMode: NSDefaultRunLoopMode)
+			outStream.scheduleInRunLoop(NSRunLoop.mainRunLoop(), forMode: NSDefaultRunLoopMode)
 			self.outStream = ReOutputStream(stream: outStream)
 			self.inStream = ReInputStream(stream: inStream)
-			super.init()
+
+			var first = true
+
 			self.inStream.readCallback = { [weak self] (inStream) in
 				if let s = self {
 					s.state.onReceive(s)
 					if s.connected {
-						s.onConnectedCallback?()
-						s.onConnectedCallback = nil
+						if first {
+							callback(nil)
+							first = false
+						}
 					}
 				}
 			}
 			inStream.open()
 			outStream.open()
-			try checkErrors()
 			state.onReceive(self)
 		}
 		else {
 			inStream = nil
 			outStream = nil
-			super.init()
-			throw ReError.Fatal("Connection failed")
+			callback("connection failed")
 		}
 	}
 
@@ -1239,14 +1252,5 @@ public class ReConnection: NSObject, NSStreamDelegate {
 	private func startQuery(query: NSData, callback: ReResponse.Callback) throws {
 		try sendQuery(query, token: nextQueryToken, callback: callback)
 		nextQueryToken++
-	}
-
-	private func checkErrors() throws {
-		if let e = self.inStream.stream.streamError {
-			throw ReError.Other(e)
-		}
-		if let e = self.outStream.stream.streamError {
-			throw ReError.Other(e)
-		}
 	}
 }
