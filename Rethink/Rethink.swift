@@ -871,7 +871,7 @@ private enum ReConnectionState {
 				break
 
 			case .Receiving(let queryToken, let size):
-				if database.inStream.buffer.length >= Int(size) {
+				if database.inStream.buffer.availableBytes() >= Int(size) {
 					let d = database.inStream.consumeData(Int(size))!
 					assert(d.length == Int(size))
 					self = .Connected
@@ -916,10 +916,11 @@ private class ReInputStream: NSObject {
 	let stream: NSInputStream
 	private var error: ReError? = nil
 	private let queue = dispatch_queue_create("nl.pixelspark.Rethink.ReInputStream", DISPATCH_QUEUE_SERIAL)
-	private var buffer: NSMutableData = NSMutableData(capacity: 512)!
+	private var buffer: MAMirroredQueue
 
 	init(stream: NSInputStream) {
 		self.stream = stream
+		self.buffer = MAMirroredQueue()
 		super.init()
 	}
 
@@ -929,7 +930,7 @@ private class ReInputStream: NSObject {
 				let buffer = NSMutableData(length: 512)!
 				let read = self.stream.read(UnsafeMutablePointer<UInt8>(buffer.mutableBytes), maxLength: buffer.length)
 				if read > 0 {
-					self.buffer.appendBytes(buffer.bytes, length: read)
+					self.buffer.write(buffer.bytes, count: read)
 				}
 			}
 		}
@@ -939,9 +940,9 @@ private class ReInputStream: NSObject {
 		var ret: NSData? = nil
 		dispatch_sync(self.queue) {
 			assert(length>0)
-			if self.buffer.length >= length {
-				let sliced = NSData(bytes: self.buffer.bytes, length: length)
-				self.buffer = NSMutableData(bytes: self.buffer.bytes.advancedBy(length), length: self.buffer.length - length)
+			if self.buffer.availableBytes() >= length {
+				let sliced = NSData(bytes: self.buffer.readPointer(), length: length)
+				self.buffer.advanceReadPointer(length)
 				ret = sliced
 				return
 			}
@@ -952,11 +953,11 @@ private class ReInputStream: NSObject {
 	private func consumeZeroTerminatedASCII() -> String? {
 		var ret: String? = nil
 		dispatch_sync(self.queue) {
-			let bytes = UnsafePointer<UInt8>(self.buffer.bytes)
-			for(var i=0; i<self.buffer.length; i++) {
+			let bytes = UnsafePointer<UInt8>(self.buffer.readPointer())
+			for(var i=0; i<self.buffer.availableBytes(); i++) {
 				if bytes[i] == 0 {
 					if let x = NSString(bytes: bytes, length: i, encoding: NSASCIIStringEncoding) {
-						self.buffer = NSMutableData(bytes: self.buffer.bytes.advancedBy(i+1), length: self.buffer.length - i - 1)
+						self.buffer.advanceReadPointer(i+1)
 						ret = x as String
 						return
 					}
@@ -985,11 +986,12 @@ private class ReInputStream: NSObject {
 private class ReOutputStream: NSObject {
 	let stream: NSOutputStream
 	private var error: ReError? = nil
-	private var outQueue: [NSData] = []
+	private var outQueue: MAMirroredQueue
 	private let queue = dispatch_queue_create("nl.pixelspark.Rethink.ReOutputStream", DISPATCH_QUEUE_SERIAL)
 
 	init(stream: NSOutputStream) {
 		self.stream = stream
+		self.outQueue = MAMirroredQueue()
 		super.init()
 	}
 
@@ -999,21 +1001,18 @@ private class ReOutputStream: NSObject {
 
 	private func send(data: NSData) {
 		dispatch_async(self.queue) {
-			self.outQueue.append(data)
+			self.outQueue.write(data.bytes, count: data.length)
 			self.write()
 		}
 	}
 
 	private func write() {
 		dispatch_async(self.queue) {
-			while self.stream.hasSpaceAvailable && self.outQueue.count > 0 {
-				let data = self.outQueue.removeFirst()
-				let buffer = UnsafePointer<UInt8>(data.bytes)
-				let bytesWritten = self.stream.write(buffer, maxLength: data.length)
+			while self.stream.hasSpaceAvailable && self.outQueue.availableBytes()>0 {
+				let bytesWritten = self.stream.write(UnsafePointer<UInt8>(self.outQueue.readPointer()), maxLength: self.outQueue.availableBytes())
 
-				if bytesWritten < data.length {
-					let sliced = NSData(bytes: buffer.advancedBy(bytesWritten), length: data.length - bytesWritten)
-					self.outQueue.insert(sliced, atIndex: 0)
+				if bytesWritten > 0 {
+					self.outQueue.advanceReadPointer(bytesWritten)
 				}
 			}
 		}

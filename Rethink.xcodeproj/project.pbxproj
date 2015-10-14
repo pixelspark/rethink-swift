@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		65A1150E1BCF0026007BC661 /* AllocateMirrored.c in Sources */ = {isa = PBXBuildFile; fileRef = 65A1150A1BCF0026007BC661 /* AllocateMirrored.c */; settings = {ASSET_TAGS = (); }; };
+		65A1150F1BCF0026007BC661 /* AllocateMirrored.h in Headers */ = {isa = PBXBuildFile; fileRef = 65A1150B1BCF0026007BC661 /* AllocateMirrored.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		65A115101BCF0026007BC661 /* MAMirroredQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = 65A1150C1BCF0026007BC661 /* MAMirroredQueue.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		65A115111BCF0026007BC661 /* MAMirroredQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 65A1150D1BCF0026007BC661 /* MAMirroredQueue.m */; settings = {ASSET_TAGS = (); }; };
 		65F739D51BC9502400B5E62D /* Rethink.h in Headers */ = {isa = PBXBuildFile; fileRef = 65F739D41BC9502400B5E62D /* Rethink.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		65F739DC1BC9502400B5E62D /* Rethink.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65F739D11BC9502400B5E62D /* Rethink.framework */; settings = {ASSET_TAGS = (); }; };
 		65F739E11BC9502400B5E62D /* RethinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65F739E01BC9502400B5E62D /* RethinkTests.swift */; };
@@ -24,6 +28,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		65A1150A1BCF0026007BC661 /* AllocateMirrored.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = AllocateMirrored.c; path = MAMirroredQueue/AllocateMirrored.c; sourceTree = SOURCE_ROOT; };
+		65A1150B1BCF0026007BC661 /* AllocateMirrored.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AllocateMirrored.h; path = MAMirroredQueue/AllocateMirrored.h; sourceTree = SOURCE_ROOT; };
+		65A1150C1BCF0026007BC661 /* MAMirroredQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MAMirroredQueue.h; path = MAMirroredQueue/MAMirroredQueue.h; sourceTree = SOURCE_ROOT; };
+		65A1150D1BCF0026007BC661 /* MAMirroredQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MAMirroredQueue.m; path = MAMirroredQueue/MAMirroredQueue.m; sourceTree = SOURCE_ROOT; };
 		65F739D11BC9502400B5E62D /* Rethink.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Rethink.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		65F739D41BC9502400B5E62D /* Rethink.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Rethink.h; sourceTree = "<group>"; };
 		65F739D61BC9502400B5E62D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -77,6 +85,10 @@
 			children = (
 				65F739D41BC9502400B5E62D /* Rethink.h */,
 				65F739D61BC9502400B5E62D /* Info.plist */,
+				65A1150A1BCF0026007BC661 /* AllocateMirrored.c */,
+				65A1150B1BCF0026007BC661 /* AllocateMirrored.h */,
+				65A1150C1BCF0026007BC661 /* MAMirroredQueue.h */,
+				65A1150D1BCF0026007BC661 /* MAMirroredQueue.m */,
 				65F739EB1BC9505B00B5E62D /* Rethink.swift */,
 			);
 			path = Rethink;
@@ -99,6 +111,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				65F739D51BC9502400B5E62D /* Rethink.h in Headers */,
+				65A1150F1BCF0026007BC661 /* AllocateMirrored.h in Headers */,
+				65A115101BCF0026007BC661 /* MAMirroredQueue.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -199,7 +213,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				65A1150E1BCF0026007BC661 /* AllocateMirrored.c in Sources */,
 				65F739EC1BC9505B00B5E62D /* Rethink.swift in Sources */,
+				65A115111BCF0026007BC661 /* MAMirroredQueue.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
