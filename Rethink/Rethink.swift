@@ -446,6 +446,10 @@ public class ReQuerySequence: ReQuery {
 		return ReQueryStream(jsonSerialization: [ReTerm.SKIP.rawValue, [self.jsonSerialization, count]])
 	}
 
+	public func sample(count: Int) -> ReQuerySequence {
+		return ReQuerySequence(jsonSerialization: [ReTerm.SAMPLE.rawValue, [self.jsonSerialization, count]])
+	}
+
 	public func nth(index: Int) -> ReQuery {
 		return ReQuery(jsonSerialization: [ReTerm.NTH.rawValue, [self.jsonSerialization, index]])
 	}
@@ -485,7 +489,7 @@ public class ReQueryStream: ReQuerySequence {
 		return ReQueryStream(jsonSerialization: [ReTerm.ZIP.rawValue, [self.jsonSerialization]])
 	}
 
-	public func sample(count: Int) -> ReQueryStream {
+	public override func sample(count: Int) -> ReQueryStream {
 		return ReQueryStream(jsonSerialization: [ReTerm.SAMPLE.rawValue, [self.jsonSerialization, count]])
 	}
 }
