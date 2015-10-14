@@ -421,7 +421,7 @@ public class ReQueryDatabase: ReQuery {
 	}
 
 	public func tableList() -> ReQuerySequence {
-		return ReQuerySequence(jsonSerialization: [ReTerm.TABLE_LIST.rawValue])
+		return ReQuerySequence(jsonSerialization: [ReTerm.TABLE_LIST.rawValue, [self.jsonSerialization]])
 	}
 
 	public func wait() -> ReQuery {
