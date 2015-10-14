@@ -914,20 +914,18 @@ public enum ReError: ErrorType {
 	case Other(ErrorType)
 }
 
-private class ReInputStream: NSObject, NSStreamDelegate {
+private class ReInputStream: NSObject {
 	typealias Callback = (ReInputStream) -> ()
 	let stream: NSInputStream
 	private var error: ReError? = nil
 	private var buffer: NSMutableData = NSMutableData(capacity: 512)!
-	var readCallback: Callback? = nil
 
 	init(stream: NSInputStream) {
 		self.stream = stream
 		super.init()
-		self.stream.delegate = self
 	}
 
-	private func drainStream() throws {
+	private func read() throws {
 		while self.stream.hasBytesAvailable {
 			let buffer = NSMutableData(length: 512)!
 			let read = self.stream.read(UnsafeMutablePointer<UInt8>(buffer.mutableBytes), maxLength: buffer.length)
@@ -973,40 +971,12 @@ private class ReInputStream: NSObject, NSStreamDelegate {
 		}
 	}
 
-	@objc private func stream(aStream: NSStream, handleEvent eventCode: NSStreamEvent) {
-		do {
-			switch eventCode {
-				case NSStreamEvent.HasBytesAvailable:
-					try self.drainStream()
-					self.readCallback?(self)
-
-				case NSStreamEvent.OpenCompleted:
-					break
-
-				case NSStreamEvent.ErrorOccurred:
-					try self.checkError()
-
-				case NSStreamEvent.EndEncountered:
-					break
-
-				default:
-					print("Unhandled input stream event: \(eventCode)")
-			}
-		}
-		catch ReError.Fatal(let e) {
-			self.error = ReError.Fatal(e)
-		}
-		catch {
-			self.error = ReError.Fatal("Unknown error")
-		}
-	}
-
 	deinit {
 		self.stream.close()
 	}
 }
 
-private class ReOutputStream: NSObject, NSStreamDelegate {
+private class ReOutputStream: NSObject {
 	let stream: NSOutputStream
 	private var error: ReError? = nil
 	private var outQueue: [NSData] = []
@@ -1014,7 +984,6 @@ private class ReOutputStream: NSObject, NSStreamDelegate {
 	init(stream: NSOutputStream) {
 		self.stream = stream
 		super.init()
-		self.stream.delegate = self
 	}
 
 	deinit {
@@ -1031,13 +1000,13 @@ private class ReOutputStream: NSObject, NSStreamDelegate {
 		do {
 			switch eventCode {
 				case NSStreamEvent.OpenCompleted:
-					try drainQueue()
+					try write()
 
 				case NSStreamEvent.ErrorOccurred:
 					try checkError()
 
 				case NSStreamEvent.HasSpaceAvailable:
-					try drainQueue()
+					try write()
 
 				default:
 					print("Unhandled output stream event: \(eventCode)")
@@ -1051,10 +1020,10 @@ private class ReOutputStream: NSObject, NSStreamDelegate {
 
 	private func send(data: NSData) throws {
 		self.outQueue.append(data)
-		try drainQueue()
+		try write()
 	}
 
-	private func drainQueue() throws {
+	private func write() throws {
 		try checkError()
 		while self.stream.hasSpaceAvailable && self.outQueue.count > 0 {
 			let data = outQueue.removeFirst()
@@ -1164,6 +1133,7 @@ public class ReConnection: NSObject, NSStreamDelegate {
 	private var outStream: ReOutputStream! = nil
 	private var state: ReConnectionState = .Unconnected
 	private var outstandingQueries: [QueryToken: ReResponse.Callback] = [:]
+	private var onConnectCallback: ((String?) -> ())? = nil
 
 	/** Create a connection to a RethinkDB instance. The URL should be of the form 'rethinkdb://host:port'. If
 	no port is given, the default port is used. If the server requires the use of an authentication key, put it
@@ -1174,6 +1144,7 @@ public class ReConnection: NSObject, NSStreamDelegate {
 
 	private func connect(callback: (String?) -> ()) {
 		assert(!self.state.connected)
+		onConnectCallback = callback
 
 		let port = (url.port ?? ReProtocol.defaultPort).integerValue
 		assert(port < 65536)
@@ -1193,25 +1164,14 @@ public class ReConnection: NSObject, NSStreamDelegate {
 		if let r = readStream, w = writeStream {
 			let inStream: NSInputStream = r.takeRetainedValue()
 			let outStream: NSOutputStream = w.takeRetainedValue()
+			inStream.delegate = self
+			outStream.delegate = self
 
 			inStream.scheduleInRunLoop(NSRunLoop.mainRunLoop(), forMode: NSDefaultRunLoopMode)
 			outStream.scheduleInRunLoop(NSRunLoop.mainRunLoop(), forMode: NSDefaultRunLoopMode)
 			self.outStream = ReOutputStream(stream: outStream)
 			self.inStream = ReInputStream(stream: inStream)
 
-			var first = true
-
-			self.inStream.readCallback = { [weak self] (inStream) in
-				if let s = self {
-					s.state.onReceive(s)
-					if s.connected {
-						if first {
-							callback(nil)
-							first = false
-						}
-					}
-				}
-			}
 			inStream.open()
 			outStream.open()
 			state.onReceive(self)
@@ -1232,6 +1192,56 @@ public class ReConnection: NSObject, NSStreamDelegate {
 	} }
 
 	private var nextQueryToken: UInt64 = 0x5ADFACE
+
+	public func stream(aStream: NSStream, handleEvent eventCode: NSStreamEvent) {
+		do {
+			switch eventCode {
+			case NSStreamEvent.ErrorOccurred:
+				throw aStream.streamError!
+
+			case NSStreamEvent.OpenCompleted:
+				break;
+
+			case NSStreamEvent.HasBytesAvailable:
+					if aStream == self.inStream.stream {
+						try self.inStream.read()
+						self.state.onReceive(self)
+						if self.connected {
+							if let cc = self.onConnectCallback {
+								cc(nil)
+								self.onConnectCallback = nil
+							}
+						}
+					}
+
+			case NSStreamEvent.HasSpaceAvailable:
+				if aStream == self.outStream.stream {
+					try self.outStream.write()
+				}
+
+			default:
+				throw ReError.Fatal("unhandled stream event: \(eventCode)")
+			}
+		}
+		catch ReError.Fatal(let m) {
+			if let cc = self.onConnectCallback {
+				cc(m)
+				self.onConnectCallback = nil
+			}
+			else {
+				print("An error occurred: \(m)")
+			}
+		}
+		catch {
+			if let cc = self.onConnectCallback {
+				cc("\(error)")
+				self.onConnectCallback = nil
+			}
+			else {
+				print("An error occurred: \(error)")
+			}
+		}
+	}
 
 	private func sendContinuation(queryToken: QueryToken, callback: ReResponse.Callback) throws {
 		let json = [ReQueryType.CONTINUE.rawValue];
