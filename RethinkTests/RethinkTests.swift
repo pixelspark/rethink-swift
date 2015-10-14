@@ -4,6 +4,9 @@ import Rethink
 class RethinkTests: XCTestCase {
 	var connection: ReConnection!
 
+	@objc func done() {
+	}
+
     func testBasicCommands() {
 		var finished = false
 
@@ -37,10 +40,14 @@ class RethinkTests: XCTestCase {
 					case .Rows(_, let cont):
 						if cont == nil {
 							outstanding--
+							print("Outstanding=\(outstanding)")
 							if outstanding == 0 {
 								R.dbDrop(databaseName).run(self.connection) { (response) in
 									XCTAssert(!response.isError, "Failed to drop database: \(response)")
+
+									// End the run loop
 									finished = true
+									self.performSelector(Selector("done"), onThread: NSThread.mainThread(), withObject: nil, waitUntilDone: false)
 								}
 							}
 						}

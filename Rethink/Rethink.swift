@@ -847,15 +847,8 @@ private enum ReConnectionState {
 
 				// Append protocol type (JSON)
 				data.appendData(NSData.dataWithLittleEndianOf(UInt32(ReProtocol.protocolType)))
-
-				do {
-					try database.outStream.send(data)
-					self = .HandshakeSent
-				}
-				catch {
-					self = .Error(ReError.Fatal("Could not send data"))
-					return
-				}
+				database.outStream.send(data)
+				self = .HandshakeSent
 
 			case .HandshakeSent:
 				if let s = database.inStream.consumeZeroTerminatedASCII() {
@@ -922,6 +915,7 @@ private class ReInputStream: NSObject {
 	typealias Callback = (ReInputStream) -> ()
 	let stream: NSInputStream
 	private var error: ReError? = nil
+	private let queue = dispatch_queue_create("nl.pixelspark.Rethink.ReInputStream", DISPATCH_QUEUE_SERIAL)
 	private var buffer: NSMutableData = NSMutableData(capacity: 512)!
 
 	init(stream: NSInputStream) {
@@ -929,41 +923,49 @@ private class ReInputStream: NSObject {
 		super.init()
 	}
 
-	private func read() throws {
-		while self.stream.hasBytesAvailable {
-			let buffer = NSMutableData(length: 512)!
-			let read = self.stream.read(UnsafeMutablePointer<UInt8>(buffer.mutableBytes), maxLength: buffer.length)
-			if read > 0 {
-				self.buffer.appendBytes(buffer.bytes, length: read)
-			}
-			else {
-				try checkError()
+	private func read() {
+		dispatch_sync(self.queue) {
+			while self.stream.hasBytesAvailable {
+				let buffer = NSMutableData(length: 512)!
+				let read = self.stream.read(UnsafeMutablePointer<UInt8>(buffer.mutableBytes), maxLength: buffer.length)
+				if read > 0 {
+					self.buffer.appendBytes(buffer.bytes, length: read)
+				}
 			}
 		}
 	}
 
 	private func consumeData(length: Int) -> NSData? {
-		assert(length>0)
-		if self.buffer.length >= length {
-			let sliced = NSData(bytes: self.buffer.bytes, length: length)
-			self.buffer = NSMutableData(bytes: self.buffer.bytes.advancedBy(length), length: self.buffer.length - length)
-			return sliced
+		var ret: NSData? = nil
+		dispatch_sync(self.queue) {
+			assert(length>0)
+			if self.buffer.length >= length {
+				let sliced = NSData(bytes: self.buffer.bytes, length: length)
+				self.buffer = NSMutableData(bytes: self.buffer.bytes.advancedBy(length), length: self.buffer.length - length)
+				ret = sliced
+				return
+			}
 		}
-		return nil
+		return ret
 	}
 
 	private func consumeZeroTerminatedASCII() -> String? {
-		let bytes = UnsafePointer<UInt8>(self.buffer.bytes)
-		for(var i=0; i<self.buffer.length; i++) {
-			if bytes[i] == 0 {
-				if let x = NSString(bytes: bytes, length: i, encoding: NSASCIIStringEncoding) {
-					self.buffer = NSMutableData(bytes: self.buffer.bytes.advancedBy(i+1), length: self.buffer.length - i - 1)
-					return String(x)
+		var ret: String? = nil
+		dispatch_sync(self.queue) {
+			let bytes = UnsafePointer<UInt8>(self.buffer.bytes)
+			for(var i=0; i<self.buffer.length; i++) {
+				if bytes[i] == 0 {
+					if let x = NSString(bytes: bytes, length: i, encoding: NSASCIIStringEncoding) {
+						self.buffer = NSMutableData(bytes: self.buffer.bytes.advancedBy(i+1), length: self.buffer.length - i - 1)
+						ret = x as String
+						return
+					}
+					return
 				}
-				return nil
 			}
+			return
 		}
-		return nil
+		return ret
 	}
 
 	private func checkError() throws {
@@ -984,6 +986,7 @@ private class ReOutputStream: NSObject {
 	let stream: NSOutputStream
 	private var error: ReError? = nil
 	private var outQueue: [NSData] = []
+	private let queue = dispatch_queue_create("nl.pixelspark.Rethink.ReOutputStream", DISPATCH_QUEUE_SERIAL)
 
 	init(stream: NSOutputStream) {
 		self.stream = stream
@@ -994,50 +997,24 @@ private class ReOutputStream: NSObject {
 		self.stream.close()
 	}
 
-	private func checkError() throws {
-		if let e = self.stream.streamError {
-			throw ReError.Other(e)
+	private func send(data: NSData) {
+		dispatch_async(self.queue) {
+			self.outQueue.append(data)
+			self.write()
 		}
 	}
 
-	@objc private func stream(aStream: NSStream, handleEvent eventCode: NSStreamEvent) {
-		do {
-			switch eventCode {
-				case NSStreamEvent.OpenCompleted:
-					try write()
+	private func write() {
+		dispatch_async(self.queue) {
+			while self.stream.hasSpaceAvailable && self.outQueue.count > 0 {
+				let data = self.outQueue.removeFirst()
+				let buffer = UnsafePointer<UInt8>(data.bytes)
+				let bytesWritten = self.stream.write(buffer, maxLength: data.length)
 
-				case NSStreamEvent.ErrorOccurred:
-					try checkError()
-
-				case NSStreamEvent.HasSpaceAvailable:
-					try write()
-
-				default:
-					print("Unhandled output stream event: \(eventCode)")
-					break;
-			}
-		}
-		catch {
-			self.error = ReError.Fatal("Error in drainQueue")
-		}
-	}
-
-	private func send(data: NSData) throws {
-		self.outQueue.append(data)
-		try write()
-	}
-
-	private func write() throws {
-		try checkError()
-		while self.stream.hasSpaceAvailable && self.outQueue.count > 0 {
-			let data = outQueue.removeFirst()
-			let buffer = UnsafePointer<UInt8>(data.bytes)
-			let bytesWritten = self.stream.write(buffer, maxLength: data.length)
-			try checkError()
-
-			if bytesWritten < data.length {
-				let sliced = NSData(bytes: buffer.advancedBy(bytesWritten), length: data.length - bytesWritten)
-				outQueue.insert(sliced, atIndex: 0)
+				if bytesWritten < data.length {
+					let sliced = NSData(bytes: buffer.advancedBy(bytesWritten), length: data.length - bytesWritten)
+					self.outQueue.insert(sliced, atIndex: 0)
+				}
 			}
 		}
 	}
@@ -1139,6 +1116,9 @@ public class ReConnection: NSObject, NSStreamDelegate {
 	private var outstandingQueries: [QueryToken: ReResponse.Callback] = [:]
 	private var onConnectCallback: ((String?) -> ())? = nil
 
+	private var nextQueryToken: UInt64 = 0x5ADFACE
+	private let queue = dispatch_queue_create("nl.pixelspark.Rethink.ReConnectionQueue", DISPATCH_QUEUE_SERIAL)
+
 	/** Create a connection to a RethinkDB instance. The URL should be of the form 'rethinkdb://host:port'. If
 	no port is given, the default port is used. If the server requires the use of an authentication key, put it
 	in the 'user' part of the URL, e.g. "rethinkdb://key@server:port". */
@@ -1170,15 +1150,17 @@ public class ReConnection: NSObject, NSStreamDelegate {
 			let outStream: NSOutputStream = w.takeRetainedValue()
 			inStream.delegate = self
 			outStream.delegate = self
-
-			inStream.scheduleInRunLoop(NSRunLoop.mainRunLoop(), forMode: NSDefaultRunLoopMode)
-			outStream.scheduleInRunLoop(NSRunLoop.mainRunLoop(), forMode: NSDefaultRunLoopMode)
 			self.outStream = ReOutputStream(stream: outStream)
 			self.inStream = ReInputStream(stream: inStream)
 
-			inStream.open()
-			outStream.open()
-			state.onReceive(self)
+			dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
+				inStream.scheduleInRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
+				outStream.scheduleInRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
+				inStream.open()
+				outStream.open()
+				self.state.onReceive(self)
+				NSRunLoop.currentRunLoop().run()
+			}
 		}
 		else {
 			inStream = nil
@@ -1195,8 +1177,6 @@ public class ReConnection: NSObject, NSStreamDelegate {
 		return self.state.error
 	} }
 
-	private var nextQueryToken: UInt64 = 0x5ADFACE
-
 	public func stream(aStream: NSStream, handleEvent eventCode: NSStreamEvent) {
 		do {
 			switch eventCode {
@@ -1208,7 +1188,7 @@ public class ReConnection: NSObject, NSStreamDelegate {
 
 			case NSStreamEvent.HasBytesAvailable:
 					if aStream == self.inStream.stream {
-						try self.inStream.read()
+						self.inStream.read()
 						self.state.onReceive(self)
 						if self.connected {
 							if let cc = self.onConnectCallback {
@@ -1220,7 +1200,7 @@ public class ReConnection: NSObject, NSStreamDelegate {
 
 			case NSStreamEvent.HasSpaceAvailable:
 				if aStream == self.outStream.stream {
-					try self.outStream.write()
+					self.outStream.write()
 				}
 
 			default:
@@ -1250,21 +1230,25 @@ public class ReConnection: NSObject, NSStreamDelegate {
 	private func sendContinuation(queryToken: QueryToken, callback: ReResponse.Callback) throws {
 		let json = [ReQueryType.CONTINUE.rawValue];
 		let query = try NSJSONSerialization.dataWithJSONObject(json, options: [])
-		try sendQuery(query, token: queryToken, callback: callback)
+		self.sendQuery(query, token: queryToken, callback: callback)
 	}
 
-	private func sendQuery(query: NSData, token: QueryToken, callback: ReResponse.Callback) throws {
-		assert(self.connected, "Cannot send a query when the connection is not open")
-		let data = NSMutableData(capacity: query.length + 8 + 4)!
-		self.outstandingQueries[token] = callback
-		data.appendData(NSData.dataWithLittleEndianOf(token))
-		data.appendData(NSData.dataWithLittleEndianOf(UInt32(query.length)))
-		data.appendData(query)
-		try self.outStream.send(data)
+	private func sendQuery(query: NSData, token: QueryToken, callback: ReResponse.Callback) {
+		dispatch_async(queue) {
+			assert(self.connected, "Cannot send a query when the connection is not open")
+			let data = NSMutableData(capacity: query.length + 8 + 4)!
+			self.outstandingQueries[token] = callback
+			data.appendData(NSData.dataWithLittleEndianOf(token))
+			data.appendData(NSData.dataWithLittleEndianOf(UInt32(query.length)))
+			data.appendData(query)
+			self.outStream.send(data)
+		}
 	}
 
 	private func startQuery(query: NSData, callback: ReResponse.Callback) throws {
-		try sendQuery(query, token: nextQueryToken, callback: callback)
-		nextQueryToken++
+		dispatch_async(queue) {
+			self.nextQueryToken++
+			self.sendQuery(query, token: self.nextQueryToken, callback: callback)
+		}
 	}
 }
