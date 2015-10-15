@@ -27,10 +27,11 @@ import Foundation
 public typealias ReDocument = [String: AnyObject]
 
 public class R {
-	public static func connect(url: NSURL, callback: (String?) -> ()) -> ReConnection {
+	public static func connect(url: NSURL, callback: (String?, ReConnection) -> ()) {
 		let c = ReConnection(url: url)
-		c.connect(callback)
-		return c
+		c.connect { (err) in
+			callback(err, c)
+		}
 	}
 
 	public static func uuid() -> ReQueryValue {
@@ -875,9 +876,9 @@ private enum ReConnectionState {
 					let d = database.inStream.consumeData(Int(size))!
 					assert(d.length == Int(size))
 					self = .Connected
-					let continuation: ReResponse.ContinuationCallback = { (callback: ReResponse.Callback) -> () in
+					let continuation: ReResponse.ContinuationCallback = { [weak database] (callback: ReResponse.Callback) -> () in
 						do {
-							try database.sendContinuation(queryToken, callback: callback)
+							try database?.sendContinuation(queryToken, callback: callback)
 						}
 						catch {
 							callback(ReResponse.Error("Could not send continuation"))
@@ -1135,6 +1136,7 @@ public class ReConnection: NSObject, NSStreamDelegate {
 		guard let hostname = url.host else {
 			self.inStream = nil
 			self.outStream = nil
+			self.onConnectCallback = nil
 			callback("Invalid URL")
 			return
 		}
@@ -1152,19 +1154,39 @@ public class ReConnection: NSObject, NSStreamDelegate {
 			self.outStream = ReOutputStream(stream: outStream)
 			self.inStream = ReInputStream(stream: inStream)
 
-			dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
+
+			dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) { [weak self] in
 				inStream.scheduleInRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
 				outStream.scheduleInRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
 				inStream.open()
 				outStream.open()
-				self.state.onReceive(self)
-				NSRunLoop.currentRunLoop().run()
+				if let s = self {
+					s.state.onReceive(s)
+				}
+
+				while self != nil {
+					if !NSRunLoop.currentRunLoop().runMode(NSDefaultRunLoopMode, beforeDate: NSDate(timeInterval: 5.0, sinceDate: NSDate())) {
+						break
+					}
+				}
+				print("Runloop end")
 			}
 		}
 		else {
 			inStream = nil
 			outStream = nil
 			callback("connection failed")
+			self.onConnectCallback = nil
+		}
+	}
+
+	public func close() {
+		dispatch_async(queue) {
+			self.state = .Terminated
+			self.inStream = nil
+			self.outStream = nil
+			self.onConnectCallback = nil
+			self.outstandingQueries.removeAll()
 		}
 	}
 
@@ -1215,9 +1237,9 @@ public class ReConnection: NSObject, NSStreamDelegate {
 				print("An error occurred: \(m)")
 			}
 		}
-		catch {
+		catch let e as NSError {
 			if let cc = self.onConnectCallback {
-				cc("\(error)")
+				cc(e.localizedDescription)
 				self.onConnectCallback = nil
 			}
 			else {
