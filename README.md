@@ -46,12 +46,12 @@ self.connection = R.connect(NSURL(string: "rethinkdb://localhost:28016")!) { err
 
 This is a very early version of the driver. It implements the V0_4 basic structure (based on JSON). It currently supports
 the most basic commands (e.g. creation of tables, databases, ..). No extra option arguments are currently supported (but 
-can easily be added to the driver code). Error handling needs some more love. Do not use in production code!
+can easily be added to the driver code). Do not use in production code!
 
 ### Installation
 
-Currently, the code is all in a single file, so adding Rethink.swift to your project should be sufficient. There are no
-external dependencies apart from Foundation.
+Drag Rethink.xcodeproj into your own project, then add Rethink.framework as dependency (build targets) and link to it.
+You should then be able to simply 'import Rethink' from Swift code.
 
 ### License
 
@@ -77,6 +77,9 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 ```
+
+Rethink.swift uses an [efficient ring buffer implementation](https://github.com/mikeash/MAMirroredQueue) for managing 
+data buffers by Mike Ash under a BSD license.
 
 ### FAQ
 
