@@ -143,6 +143,9 @@ public class ReConnection: NSObject, NSStreamDelegate {
 					self.outStream.write()
 				}
 
+			case NSStreamEvent.EndEncountered:
+				throw ReError.Fatal("The server unexpectedly closed the connection.")
+
 			default:
 				throw ReError.Fatal("unhandled stream event: \(eventCode)")
 			}
