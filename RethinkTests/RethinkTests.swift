@@ -30,6 +30,15 @@ class RethinkTests: XCTestCase {
 				print(response)
 			}
 
+			R.range(1, 10).map { e in return e.mul(10) }.run(connection) { response in
+				if let r = response.value as? [Int] {
+					XCTAssert(r == Array(1..<10).map { return $0 * 10 })
+				}
+				else {
+					XCTAssert(false, "invalid response")
+				}
+			}
+
 			var outstanding = 100
 			var reader : ReResponse.Callback? = nil
 			reader = { (response) -> () in

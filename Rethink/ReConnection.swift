@@ -284,11 +284,16 @@ private enum ReConnectionState {
 					}
 				}
 
-				if let handler = database.outstandingQueries[queryToken], let response = ReResponse(json: d, continuation: continuation) {
-					handler(response)
+				if let handler = database.outstandingQueries[queryToken] {
+					if let response = ReResponse(json: d, continuation: continuation) {
+						handler(response)
+					}
+					else {
+						self = .Error(ReError.Fatal("Invalid response object from server"))
+					}
 				}
 				else {
-					self = .Error(ReError.Fatal("No response handler or invalid response object from server"))
+					fatalError("No handler found for server response. This should never happen unless server is behaving badly.")
 				}
 				self.onReceive(database)
 			}
@@ -439,7 +444,7 @@ public enum ReResponse {
 						self = .Value(ReDatum(jsonSerialization: r.first!).value)
 
 					case ReProtocol.responseTypeSuccessPartial, ReProtocol.responseTypeSuccessSequence:
-						if let r = d.valueForKey("r") as? [ReDocument] {
+						if let r = d.valueForKey("r") as? [[String: AnyObject]] {
 							let deserialized = r.map { (document) -> ReDocument in
 								var dedoc: ReDocument = [:]
 								for (k, v) in document {
@@ -449,6 +454,13 @@ public enum ReResponse {
 							}
 
 							self = .Rows(deserialized, type.integerValue == ReProtocol.responseTypeSuccessPartial ? continuation : nil)
+						}
+						else if let r = d.valueForKey("r") as? [AnyObject] {
+							let deserialized = r.map { (value) -> AnyObject in
+								return ReDatum(jsonSerialization: value).value
+							}
+
+							self = .Value(deserialized)
 						}
 						else {
 							return nil
