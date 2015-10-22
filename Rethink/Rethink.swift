@@ -184,6 +184,10 @@ public class ReQuerySequence: ReQuery {
 		self.jsonSerialization = jsonSerialization
 	}
 
+	public func distinct() -> ReQuerySequence {
+		return ReQuerySequence(jsonSerialization: [ReTerm.DISTINCT.rawValue, [self.jsonSerialization]])
+	}
+
 	public func count() -> ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.COUNT.rawValue, [self.jsonSerialization]])
 	}
@@ -246,9 +250,13 @@ public class ReQuerySequence: ReQuery {
 		return self.map(ReQueryLambda(block: block))
 	}
 
-	public func withFields(fields: ReQueryValue...) -> ReQuerySequence {
+	public func withFields(fields: [ReQueryValue]) -> ReQuerySequence {
 		let values = fields.map({ e in return e.jsonSerialization })
 		return ReQuerySequence(jsonSerialization: [ReTerm.WITH_FIELDS.rawValue, [self.jsonSerialization, [ReTerm.MAKE_ARRAY.rawValue, values]]])
+	}
+
+	public func union(sequence: ReQuerySequence) -> ReQueryStream {
+		return ReQueryStream(jsonSerialization: [ReTerm.UNION.rawValue, [self.jsonSerialization, sequence.jsonSerialization]])
 	}
 }
 
@@ -332,6 +340,10 @@ public class ReQueryTable: ReQuerySequence {
 
 	public func between(lower: ReQueryValue, _ upper: ReQueryValue) -> ReQuerySequence {
 		return ReQuerySequence(jsonSerialization: [ReTerm.BETWEEN.rawValue, [self.jsonSerialization, lower.jsonSerialization, upper.jsonSerialization]])
+	}
+
+	public override func distinct() -> ReQueryStream {
+		return ReQueryStream(jsonSerialization: [ReTerm.DISTINCT.rawValue, [self.jsonSerialization]])
 	}
 }
 
