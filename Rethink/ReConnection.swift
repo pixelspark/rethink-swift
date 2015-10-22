@@ -24,18 +24,33 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE. **/
 import Foundation
 
+private typealias ReQueryToken = UInt64
+
+private struct ReTokenCounter {
+	private var nextQueryToken: UInt64 = 0x5ADFACE
+	private var queue = dispatch_queue_create("nl.pixelspark.Rethink.ReTokenCounter", DISPATCH_QUEUE_SERIAL)
+
+	mutating func next() -> ReQueryToken {
+		var nt: UInt64 = 0
+		dispatch_sync(self.queue) {
+			nt = self.nextQueryToken
+			self.nextQueryToken++
+		}
+		return nt
+	}
+}
+
 public class ReConnection: NSObject, NSStreamDelegate {
-	private typealias QueryToken = UInt64
 	public let url: NSURL
 	public var authenticationKey: String? { get { return self.url.user } }
 
 	private var inStream: ReInputStream! = nil
 	private var outStream: ReOutputStream! = nil
 	private var state: ReConnectionState = .Unconnected
-	private var outstandingQueries: [QueryToken: ReResponse.Callback] = [:]
+	private var outstandingQueries: [ReQueryToken: ReResponse.Callback] = [:]
 	private var onConnectCallback: ((String?) -> ())? = nil
 
-	private var nextQueryToken: UInt64 = 0x5ADFACE
+	private static var tokenCounter = ReTokenCounter()
 	private let queue = dispatch_queue_create("nl.pixelspark.Rethink.ReConnectionQueue", DISPATCH_QUEUE_SERIAL)
 
 	/** Create a connection to a RethinkDB instance. The URL should be of the form 'rethinkdb://host:port'. If
@@ -88,7 +103,10 @@ public class ReConnection: NSObject, NSStreamDelegate {
 						break
 					}
 				}
+
+				#if DEBUG
 				print("Runloop end")
+				#endif
 			}
 		}
 		else {
@@ -118,66 +136,69 @@ public class ReConnection: NSObject, NSStreamDelegate {
 		} }
 
 	public func stream(aStream: NSStream, handleEvent eventCode: NSStreamEvent) {
-		do {
-			switch eventCode {
-			case NSStreamEvent.ErrorOccurred:
-				throw aStream.streamError!
+		dispatch_sync(self.queue) {
+			do {
+				switch eventCode {
+				case NSStreamEvent.ErrorOccurred:
+					throw aStream.streamError!
 
-			case NSStreamEvent.OpenCompleted:
-				break;
+				case NSStreamEvent.OpenCompleted:
+					break;
 
-			case NSStreamEvent.HasBytesAvailable:
-				if aStream == self.inStream.stream {
-					self.inStream.read()
-					self.state.onReceive(self)
-					if self.connected {
-						if let cc = self.onConnectCallback {
-							cc(nil)
-							self.onConnectCallback = nil
+				case NSStreamEvent.HasBytesAvailable:
+					if aStream == self.inStream?.stream {
+						self.inStream.read()
+						self.state.onReceive(self)
+						if self.connected {
+							if let cc = self.onConnectCallback {
+								cc(nil)
+								self.onConnectCallback = nil
+							}
 						}
 					}
+
+				case NSStreamEvent.HasSpaceAvailable:
+					if aStream == self.outStream?.stream {
+						self.outStream.write()
+					}
+
+				case NSStreamEvent.EndEncountered:
+					throw ReError.Fatal("The server unexpectedly closed the connection.")
+
+				default:
+					throw ReError.Fatal("unhandled stream event: \(eventCode)")
 				}
-
-			case NSStreamEvent.HasSpaceAvailable:
-				if aStream == self.outStream.stream {
-					self.outStream.write()
+			}
+			catch ReError.Fatal(let m) {
+				if let cc = self.onConnectCallback {
+					cc(m)
+					self.onConnectCallback = nil
 				}
-
-			case NSStreamEvent.EndEncountered:
-				throw ReError.Fatal("The server unexpectedly closed the connection.")
-
-			default:
-				throw ReError.Fatal("unhandled stream event: \(eventCode)")
+				else {
+					fatalError("An error occurred: \(m)")
+				}
 			}
-		}
-		catch ReError.Fatal(let m) {
-			if let cc = self.onConnectCallback {
-				cc(m)
-				self.onConnectCallback = nil
-			}
-			else {
-				print("An error occurred: \(m)")
-			}
-		}
-		catch let e as NSError {
-			if let cc = self.onConnectCallback {
-				cc(e.localizedDescription)
-				self.onConnectCallback = nil
-			}
-			else {
-				print("An error occurred: \(error)")
+			catch let e as NSError {
+				if let cc = self.onConnectCallback {
+					cc(e.localizedDescription)
+					self.onConnectCallback = nil
+				}
+				else {
+					fatalError("An error occurred: \(self.error)")
+				}
 			}
 		}
 	}
 
-	private func sendContinuation(queryToken: QueryToken, callback: ReResponse.Callback) throws {
+	private func sendContinuation(token: ReQueryToken, callback: ReResponse.Callback) throws {
 		let json = [ReProtocol.ReQueryType.CONTINUE.rawValue];
 		let query = try NSJSONSerialization.dataWithJSONObject(json, options: [])
-		self.sendQuery(query, token: queryToken, callback: callback)
+		self.sendQuery(query, token: token, callback: callback)
 	}
 
-	private func sendQuery(query: NSData, token: QueryToken, callback: ReResponse.Callback) {
+	private func sendQuery(query: NSData, token: ReQueryToken, callback: ReResponse.Callback) {
 		dispatch_async(queue) {
+			assert(self.outstandingQueries[token] == nil, "A query with token \(token) is already outstanding")
 			assert(self.connected, "Cannot send a query when the connection is not open")
 			let data = NSMutableData(capacity: query.length + 8 + 4)!
 			self.outstandingQueries[token] = callback
@@ -190,8 +211,8 @@ public class ReConnection: NSObject, NSStreamDelegate {
 
 	internal func startQuery(query: NSData, callback: ReResponse.Callback) throws {
 		dispatch_async(queue) {
-			self.nextQueryToken++
-			self.sendQuery(query, token: self.nextQueryToken, callback: callback)
+			let token = ReConnection.tokenCounter.next()
+			self.sendQuery(query, token: token, callback: callback)
 		}
 	}
 }
@@ -275,7 +296,10 @@ private enum ReConnectionState {
 				let d = database.inStream.consumeData(Int(size))!
 				assert(d.length == Int(size))
 				self = .Connected
+				var called = false
 				let continuation: ReResponse.ContinuationCallback = { [weak database] (callback: ReResponse.Callback) -> () in
+					assert(!called, "continuation callback for query token \(queryToken) must never be called more than once")
+					called = true
 					do {
 						try database?.sendContinuation(queryToken, callback: callback)
 					}
@@ -283,22 +307,26 @@ private enum ReConnectionState {
 						callback(ReResponse.Error("Could not send continuation"))
 					}
 				}
-
-				if let handler = database.outstandingQueries[queryToken] {
-					if let response = ReResponse(json: d, continuation: continuation) {
-						handler(response)
+				
+				dispatch_async(database.queue) {
+					if let handler = database.outstandingQueries[queryToken] {
+						if let response = ReResponse(json: d, continuation: continuation) {
+							database.outstandingQueries.removeValueForKey(queryToken)
+							handler(response)
+						}
+						else {
+							self = .Error(ReError.Fatal("Invalid response object from server"))
+						}
 					}
 					else {
-						self = .Error(ReError.Fatal("Invalid response object from server"))
+						fatalError("No handler found for server response. This should never happen unless server is behaving badly.")
 					}
 				}
-				else {
-					fatalError("No handler found for server response. This should never happen unless server is behaving badly.")
-				}
+
 				self.onReceive(database)
 			}
 			else {
-				print("Need more data for qt=\(queryToken)")
+				// Need more data for this query token before we can continue
 			}
 			break
 
