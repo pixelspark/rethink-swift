@@ -196,12 +196,22 @@ public class ReConnection: NSObject, NSStreamDelegate {
 		self.sendQuery(query, token: token, callback: callback)
 	}
 
+	private func dummy() {
+	}
+
 	private func sendQuery(query: NSData, token: ReQueryToken, callback: ReResponse.Callback) {
 		dispatch_async(queue) {
 			assert(self.outstandingQueries[token] == nil, "A query with token \(token) is already outstanding")
 			assert(self.connected, "Cannot send a query when the connection is not open")
 			let data = NSMutableData(capacity: query.length + 8 + 4)!
-			self.outstandingQueries[token] = callback
+
+			let reffingCallback: ReResponse.Callback = { (res) -> () in
+				// This is used to create a reference to ReConnection, and keeps it alive at least until the query has finished.
+				self.dummy()
+				callback(res)
+			}
+
+			self.outstandingQueries[token] = reffingCallback
 			data.appendData(NSData.dataWithLittleEndianOf(token))
 			data.appendData(NSData.dataWithLittleEndianOf(UInt32(query.length)))
 			data.appendData(query)
