@@ -331,9 +331,9 @@ private enum ReConnectionState {
 					else {
 						fatalError("No handler found for server response. This should never happen unless server is behaving badly.")
 					}
-				}
 
-				self.onReceive(database)
+					self.onReceive(database)
+				}
 			}
 			else {
 				// Need more data for this query token before we can continue
