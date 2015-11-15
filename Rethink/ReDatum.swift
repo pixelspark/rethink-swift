@@ -52,6 +52,10 @@ public class ReDatum: ReQueryValue {
 		self.jsonSerialization = [ReTerm.MAKE_ARRAY.rawValue, array.map { return $0.jsonSerialization }]
 	}
 
+	internal init(document: ReDocument) {
+		self.jsonSerialization = document
+	}
+
 	internal init(date: NSDate) {
 		self.jsonSerialization = [ReDatum.reqlSpecialKey: ReDatum.reqlTypeTime, "epoch_time": date.timeIntervalSince1970, "timezone": "+00:00"]
 	}

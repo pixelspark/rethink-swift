@@ -80,6 +80,10 @@ public class R {
 		return ReDatum(bool: bool)
 	}
 
+	public static func expr(document: ReDocument) -> ReQueryValue {
+		return ReDatum(document: document)
+	}
+
 	public static func expr(array: [ReQueryValue]) -> ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.MAKE_ARRAY.rawValue, array.map { return $0.jsonSerialization }])
 	}
@@ -284,6 +288,10 @@ public class ReQueryTable: ReQuerySequence {
 
 	public func insert(documents: [ReDocument]) -> ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.INSERT.rawValue, [self.jsonSerialization, [ReTerm.MAKE_ARRAY.rawValue, documents]]])
+	}
+
+	public func insert(objects: [ReQueryValue]) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.INSERT.rawValue, [self.jsonSerialization, [ReTerm.MAKE_ARRAY.rawValue, objects.map { return $0.jsonSerialization }]]])
 	}
 
 	public func update(changes: ReDocument) -> ReQueryValue {
