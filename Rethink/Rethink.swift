@@ -80,6 +80,10 @@ public class R {
 		return ReDatum(bool: bool)
 	}
 
+	public static func expr() -> ReQueryValue {
+		return ReDatum()
+	}
+
 	public static func expr(document: ReDocument) -> ReQueryValue {
 		return ReDatum(document: document)
 	}

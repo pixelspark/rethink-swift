@@ -32,6 +32,10 @@ public class ReDatum: ReQueryValue {
 	private static let reqlTypeBinary = "BINARY"
 	private static let reqlSpecialKey = "$reql_type$"
 
+	internal init() {
+		self.jsonSerialization = NSNull()
+	}
+
 	internal init(string: String) {
 		self.jsonSerialization = string
 	}
