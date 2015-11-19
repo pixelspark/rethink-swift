@@ -60,6 +60,14 @@ public class ReDatum: ReQueryValue {
 		self.jsonSerialization = document
 	}
 
+	internal init(object: [String: ReQueryValue]) {
+		var serialized: [String: AnyObject] = [:]
+		for (key, value) in object {
+			serialized[key] = value.jsonSerialization
+		}
+		self.jsonSerialization = serialized
+	}
+
 	internal init(date: NSDate) {
 		self.jsonSerialization = [ReDatum.reqlSpecialKey: ReDatum.reqlTypeTime, "epoch_time": date.timeIntervalSince1970, "timezone": "+00:00"]
 	}
