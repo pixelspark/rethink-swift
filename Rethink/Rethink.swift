@@ -88,6 +88,10 @@ public class R {
 		return ReDatum(document: document)
 	}
 
+	public static func expr(object: [String: ReQueryValue]) -> ReQueryValue {
+		return ReDatum(object: object)
+	}
+
 	public static func expr(array: [ReQueryValue]) -> ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.MAKE_ARRAY.rawValue, array.map { return $0.jsonSerialization }])
 	}
@@ -366,6 +370,14 @@ public protocol ReQuery {
 public protocol ReQueryValue: ReQuery {
 }
 
+public enum ReTypeName: String {
+	case Number = "number"
+	case String = "string"
+	case Array = "array"
+	case Object = "object"
+	case Binary = "binary"
+}
+
 public extension ReQuery {
 	typealias Callback = (ReResponse) -> ()
 
@@ -385,6 +397,14 @@ public extension ReQuery {
 
 	public func typeOf() -> ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.TYPE_OF.rawValue, [self.jsonSerialization]])
+	}
+
+	public func coerceTo(type: ReTypeName) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.COERCE_TO.rawValue, [self.jsonSerialization, type.rawValue]])
+	}
+
+	public func coerceTo(type: ReQueryValue) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.COERCE_TO.rawValue, [self.jsonSerialization, type.jsonSerialization]])
 	}
 
 	public func info() -> ReQueryValue {
