@@ -513,6 +513,10 @@ public extension ReQueryValue {
 		return self.toJSON()
 	}
 
+	public func merge(value: ReQueryValue) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.MERGE.rawValue, [self.jsonSerialization, value.jsonSerialization]])
+	}
+
 	public subscript(key: String) -> ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.BRACKET.rawValue, [self.jsonSerialization, key]])
 	}
