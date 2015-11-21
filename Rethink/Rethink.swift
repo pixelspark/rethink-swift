@@ -350,6 +350,10 @@ public class ReQueryTable: ReQuerySequence {
 		return ReDatum(jsonSerialization: [ReTerm.GET.rawValue, [self.jsonSerialization, primaryKey]])
 	}
 
+	public func getAll(key: ReQueryValue, index: String) -> ReQuerySequence {
+		return ReQuerySequence(jsonSerialization: [ReTerm.GET_ALL.rawValue, [self.jsonSerialization, key.jsonSerialization], ["index": index]])
+	}
+
 	public func rebalance() -> ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.REBALANCE.rawValue, [self.jsonSerialization]])
 	}
