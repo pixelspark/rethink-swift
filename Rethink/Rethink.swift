@@ -108,6 +108,10 @@ public class R {
 		return ReDatum(jsonSerialization: [ReTerm.RANDOM.rawValue, [lower, upperOpen], ["float": true]])
 	}
 
+	public static func random(lower: ReQueryValue, _ upperOpen: ReQueryValue, float: Bool = false) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.RANDOM.rawValue, [lower.jsonSerialization, upperOpen.jsonSerialization], ["float": float]])
+	}
+
 	public static func random() -> ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.RANDOM.rawValue, []])
 	}
@@ -517,8 +521,24 @@ public extension ReQueryValue {
 		return self.toJSON()
 	}
 
+	public func upcase() -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.UPCASE.rawValue, [self.jsonSerialization]])
+	}
+
+	public func downcase() -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.DOWNCASE.rawValue, [self.jsonSerialization]])
+	}
+
+	public func xor(other: ReQueryValue) -> ReQueryValue {
+		return self.and(other.not()).or(self.not().and(other))
+	}
+
 	public func merge(value: ReQueryValue) -> ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.MERGE.rawValue, [self.jsonSerialization, value.jsonSerialization]])
+	}
+
+	public func branch(ifTrue: ReQueryValue, _ ifFalse: ReQueryValue) -> ReQueryValue {
+		return R.branch(self, ifTrue: ifTrue, ifFalse: ifFalse)
 	}
 
 	public subscript(key: String) -> ReQueryValue {
