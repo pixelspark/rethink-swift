@@ -8,7 +8,7 @@ class RethinkTests: XCTestCase {
     func testBasicCommands() {
 		var finished = false
 
-		R.connect(NSURL(string: "rethinkdb://localhost:28016")!) { (err, connection) in
+		R.connect(NSURL(string: "rethinkdb://localhost:28015")!) { (err, connection) in
 			XCTAssert(err == nil, "Connection error: \(err)")
 
 			print("Connected!")

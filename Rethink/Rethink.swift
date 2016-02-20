@@ -25,6 +25,15 @@ OTHER DEALINGS IN THE SOFTWARE. **/
 import Foundation
 
 public class R {
+	private static func optargs<T: ReArg>(args: [T]) -> AnyObject {
+		var dict: [String: AnyObject] = [:]
+		for arg in args {
+			assert(dict[arg.serialization.0] == nil, "an optional argument may only be specified once")
+			dict[arg.serialization.0] = arg.serialization.1
+		}
+		return dict
+	}
+
 	public static func connect(url: NSURL, callback: (String?, ReConnection) -> ()) {
 		let c = ReConnection(url: url)
 		c.connect { (err) in
@@ -161,6 +170,66 @@ public class R {
 	}
 }
 
+public enum ReTableReadMode: String {
+	case Single = "single"
+	case Majority = "majority"
+	case Outdated = "outdated"
+}
+
+public enum ReTableIdentifierFormat: String {
+	case Name = "name"
+	case UUID = "uuid"
+}
+
+/** Optional arguments are instances of ReArg. */
+public protocol ReArg {
+	var serialization: (String, AnyObject) { get }
+}
+
+/** Optional arguments for the R.table command. */
+public enum ReTableArg: ReArg {
+	case ReadMode(ReTableReadMode)
+	case IdentifierFormat(ReTableIdentifierFormat)
+
+	public var serialization: (String, AnyObject) {
+		switch self {
+		case .ReadMode(let rm): return ("read_mode", rm.rawValue)
+		case .IdentifierFormat(let i): return ("identifier_format", i.rawValue)
+		}
+	}
+}
+
+public enum ReFilterArg: ReArg {
+	case Default(AnyObject)
+
+	public var serialization: (String, AnyObject) {
+		switch self {
+		case .Default(let a): return ("default", a)
+		}
+	}
+}
+
+public enum ReTableDurability: String {
+	case Soft = "soft"
+	case Hard = "hard"
+}
+
+public enum ReTableCreateArg: ReArg {
+	case PrimaryKey(String)
+	case Durability(ReTableDurability)
+	case Shards(Int)
+	case Replicas(Int)
+
+	public var serialization: (String, AnyObject) {
+		switch self {
+		case .PrimaryKey(let p): return ("primary_key", p)
+		case .Durability(let d): return ("durability", d.rawValue)
+		case .Shards(let s): return ("shards", s)
+		case .Replicas(let r): return ("replicas", r)
+		}
+	}
+}
+
 public class ReQueryDatabase: ReQuery {
 	public let jsonSerialization: AnyObject
 
@@ -168,12 +237,12 @@ public class ReQueryDatabase: ReQuery {
 		self.jsonSerialization = [ReTerm.DB.rawValue, [name]]
 	}
 
-	public func table(name: String) -> ReQueryTable {
-		return ReQueryTable(database: self, name: name)
+	public func table(name: String, options: ReTableArg...) -> ReQueryTable {
+		return ReQueryTable(database: self, name: name, options: options)
 	}
 
-	public func tableCreate(name: String) -> ReQueryValue {
-		return ReDatum(jsonSerialization: [ReTerm.TABLE_CREATE.rawValue, [self.jsonSerialization, name]])
+	public func tableCreate(name: String, options: ReTableCreateArg...) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.TABLE_CREATE.rawValue, [self.jsonSerialization, name], R.optargs(options)])
 	}
 
 	public func tableDrop(name: String) -> ReQueryValue {
@@ -228,12 +297,12 @@ public class ReQuerySequence: ReQuery {
 		return ReDatum(jsonSerialization: [ReTerm.IS_EMPTY.rawValue, [self.jsonSerialization]])
 	}
 
-	public func filter(specification: [String: ReQueryValue]) -> ReQuerySequence {
+	public func filter(specification: [String: ReQueryValue], options: ReFilterArg...) -> ReQuerySequence {
 		var serialized: [String: AnyObject] = [:]
 		for (k, v) in specification {
 			serialized[k] = v.jsonSerialization
 		}
-		return ReQuerySequence(jsonSerialization: [ReTerm.FILTER.rawValue, [self.jsonSerialization, serialized]])
+		return ReQuerySequence(jsonSerialization: [ReTerm.FILTER.rawValue, [self.jsonSerialization, serialized], R.optargs(options)])
 	}
 
 	public func filter(predicate: RePredicate) -> ReQuerySequence {
@@ -294,8 +363,9 @@ public class ReQueryStream: ReQuerySequence {
 }
 
 public class ReQueryTable: ReQuerySequence {
-	private init(database: ReQueryDatabase, name: String) {
-		super.init(jsonSerialization: [ReTerm.TABLE.rawValue, [database.jsonSerialization, name]])
+	private init(database: ReQueryDatabase, name: String, options: [ReTableArg]) {
+		let x = R.optargs(options)
+		super.init(jsonSerialization: [ReTerm.TABLE.rawValue, [database.jsonSerialization, name], x])
 	}
 
 	public func insert(documents: [ReDocument]) -> ReQueryValue {

@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "B4ECFDB54DAEDE750287282DDD72484BDC32C452",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "B4ECFDB54DAEDE750287282DDD72484BDC32C452" : 0,
+    "A5F18CC216C059F29632AA08FA9E5DF3898315E3" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "9D490845-C9AB-4999-8F49-108ED1CB5EBC",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "B4ECFDB54DAEDE750287282DDD72484BDC32C452" : "Rethink\/",
+    "A5F18CC216C059F29632AA08FA9E5DF3898315E3" : ".."
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "Rethink",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "Rethink.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "\/Volumes\/code\/qbe.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "A5F18CC216C059F29632AA08FA9E5DF3898315E3"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/pixelspark\/rethink-swift",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "B4ECFDB54DAEDE750287282DDD72484BDC32C452"
+    }
+  ]
+}
