@@ -420,8 +420,8 @@ public class ReQueryTable: ReQuerySequence {
 		return ReDatum(jsonSerialization: [ReTerm.WAIT.rawValue, [self.jsonSerialization]])
 	}
 
-	public func get(primaryKey: AnyObject) -> ReQueryValue {
-		return ReDatum(jsonSerialization: [ReTerm.GET.rawValue, [self.jsonSerialization, primaryKey]])
+	public func get(primaryKey: AnyObject) -> ReQueryRow {
+		return ReQueryRow(jsonSerialization: [ReTerm.GET.rawValue, [self.jsonSerialization, primaryKey]])
 	}
 
 	public func getAll(key: ReQueryValue, index: String) -> ReQuerySequence {
@@ -446,6 +446,20 @@ public protocol ReQuery {
 }
 
 public protocol ReQueryValue: ReQuery {
+}
+
+public class ReQueryRow: ReDatum {
+	public func update(changes: ReDocument) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.UPDATE.rawValue, [self.jsonSerialization, changes]])
+	}
+
+	public func delete() -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.DELETE.rawValue, [self.jsonSerialization]])
+	}
+
+	public func keys() -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.KEYS.rawValue, [self.jsonSerialization]])
+	}
 }
 
 public enum ReTypeName: String {
