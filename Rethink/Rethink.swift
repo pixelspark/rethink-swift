@@ -343,6 +343,10 @@ public class ReQuerySequence: ReQuery {
 	public func union(sequence: ReQuerySequence) -> ReQueryStream {
 		return ReQueryStream(jsonSerialization: [ReTerm.UNION.rawValue, [self.jsonSerialization, sequence.jsonSerialization]])
 	}
+
+	public func delete() -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.DELETE.rawValue, [self.jsonSerialization]])
+	}
 }
 
 public class ReQuerySelection: ReQuerySequence {
@@ -382,10 +386,6 @@ public class ReQueryTable: ReQuerySequence {
 
 	public func replace(changes: ReDocument) -> ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.REPLACE.rawValue, [self.jsonSerialization, changes]])
-	}
-
-	public func delete() -> ReQueryValue {
-		return ReDatum(jsonSerialization: [ReTerm.DELETE.rawValue, [self.jsonSerialization]])
 	}
 
 	public func indexWait() -> ReQueryValue {
