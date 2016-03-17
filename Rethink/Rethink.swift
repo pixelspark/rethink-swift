@@ -597,6 +597,10 @@ public extension ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.DEFAULT.rawValue, [self.jsonSerialization, value.jsonSerialization]])
 	}
 
+	public func match(value: ReQueryValue) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.MATCH.rawValue, [self.jsonSerialization, value.jsonSerialization]])
+	}
+
 	public func toJSON() -> ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.TO_JSON_STRING.rawValue, [self.jsonSerialization]])
 	}
