@@ -49,7 +49,6 @@ private enum ReSocketState {
 private class ReSocket: GCDAsyncSocketDelegate {
 	typealias WriteCallback = (String?) -> ()
 	typealias ReadCallback = (NSData?) -> ()
-	private static let timeOut = 5.0
 
 	let socket: GCDAsyncSocket
 	private var state: ReSocketState = .Unconnected
@@ -98,7 +97,7 @@ private class ReSocket: GCDAsyncSocketDelegate {
 		dispatch_async(socket.delegateQueue) {
 			let tag = (self.readCallbacks.count + 1)
 			self.readCallbacks[tag] = callback
-			self.socket.readDataToLength(UInt(length), withTimeout: ReSocket.timeOut, tag: tag)
+			self.socket.readDataToLength(UInt(length), withTimeout: -1.0, tag: tag)
 		}
 	}
 
@@ -119,7 +118,7 @@ private class ReSocket: GCDAsyncSocketDelegate {
 					callback(nil)
 				}
 			}
-			self.socket.readDataToData(zero, withTimeout: ReSocket.timeOut, tag: tag)
+			self.socket.readDataToData(zero, withTimeout: -1.0, tag: tag)
 		}
 	}
 
@@ -131,7 +130,7 @@ private class ReSocket: GCDAsyncSocketDelegate {
 		dispatch_async(socket.delegateQueue) {
 			let tag = (self.writeCallbacks.count + 1)
 			self.writeCallbacks[tag] = callback
-			self.socket.writeData(data, withTimeout: ReSocket.timeOut, tag: tag)
+			self.socket.writeData(data, withTimeout: -1.0, tag: tag)
 		}
 	}
 
@@ -151,6 +150,11 @@ private class ReSocket: GCDAsyncSocketDelegate {
 				self.readCallbacks.removeValueForKey(tag)
 			}
 		}
+	}
+
+	func disconnect() {
+		self.socket.disconnect()
+		self.state = .Unconnected
 	}
 
 	deinit {
@@ -233,6 +237,14 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 		}
 	}
 
+	public func close() {
+		dispatch_async(self.queue) {
+			self.socket.disconnect()
+			self.state = .Unconnected
+			self.outstandingQueries.removeAll()
+		}
+	}
+
 	public var connected: Bool {
 		if case ReConnectionState.Connected = state {
 			return true
@@ -271,9 +283,6 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 								else {
 									self.state = .Error(ReError.Fatal("Invalid response object from server"))
 								}
-							}
-							else {
-								fatalError("No handler found for server response. This should never happen unless server is behaving badly.")
 							}
 						}
 					}
@@ -354,6 +363,13 @@ private enum ReConnectionState {
 public enum ReError: ErrorType {
 	case Fatal(String)
 	case Other(ErrorType)
+
+	public var description: String {
+		switch self {
+		case .Fatal(let s): return s
+		case .Other(let e): return "\(e)"
+		}
+	}
 }
 
 public enum ReResponse {
