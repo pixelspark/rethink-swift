@@ -697,7 +697,9 @@ public class ReQueryLambda: ReQuery {
 	private static var parameterCounter = 0
 
 	init(block: RePredicate) {
-		let parameter = ReDatum(jsonSerialization: ++ReQueryLambda.parameterCounter)
+		ReQueryLambda.parameterCounter += 1
+		let p = ReQueryLambda.parameterCounter
+		let parameter = ReDatum(jsonSerialization: p)
 		let parameterAccess = ReDatum(jsonSerialization: [ReTerm.VAR.rawValue, [parameter.jsonSerialization]])
 
 		self.jsonSerialization = [

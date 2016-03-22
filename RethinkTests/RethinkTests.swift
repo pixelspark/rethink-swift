@@ -47,7 +47,7 @@ class RethinkTests: XCTestCase {
 				switch response {
 					case .Rows(_, let cont):
 						if cont == nil {
-							outstanding--
+							outstanding -= 1
 							print("Outstanding=\(outstanding)")
 							if outstanding == 0 {
 								R.dbDrop(databaseName).run(connection) { (response) in
@@ -55,7 +55,7 @@ class RethinkTests: XCTestCase {
 
 									// End the run loop
 									finished = true
-									self.performSelector(Selector("done"), onThread: NSThread.mainThread(), withObject: nil, waitUntilDone: false)
+									self.performSelector(#selector(RethinkTests.done), onThread: NSThread.mainThread(), withObject: nil, waitUntilDone: false)
 								}
 							}
 						}

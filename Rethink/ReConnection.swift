@@ -34,7 +34,7 @@ private struct ReTokenCounter {
 		var nt: UInt64 = 0
 		dispatch_sync(self.queue) {
 			nt = self.nextQueryToken
-			self.nextQueryToken++
+			self.nextQueryToken += 1
 		}
 		return nt
 	}
@@ -397,7 +397,8 @@ private class ReInputStream: NSObject {
 		var ret: String? = nil
 		dispatch_sync(self.queue) {
 			let bytes = UnsafePointer<UInt8>(self.buffer.readPointer())
-			for(var i=0; i<self.buffer.availableBytes(); i++) {
+
+			for i in 0..<self.buffer.availableBytes() {
 				if bytes[i] == 0 {
 					if let x = NSString(bytes: bytes, length: i, encoding: NSASCIIStringEncoding) {
 						self.buffer.advanceReadPointer(i+1)
@@ -559,7 +560,7 @@ private extension NSData {
 		var swapped = CFSwapInt64HostToLittle(nr)
 
 		var bytes: [UInt8] = [0,0,0,0,0,0,0,0]
-		for(var i = 0; i <= 7; i++) {
+		for i in 0...7 {
 			bytes[i] = UInt8(swapped & 0xFF)
 			swapped = swapped >> 8
 		}
@@ -571,7 +572,7 @@ private extension NSData {
 		var swapped = CFSwapInt32HostToLittle(nr) // No-op on little endian archs
 
 		var bytes: [UInt8] = [0,0,0,0]
-		for(var i = 0; i <= 3; i++) {
+		for i in 0...3 {
 			bytes[i] = UInt8(swapped & 0xFF)
 			swapped = swapped >> 8
 		}
@@ -583,7 +584,7 @@ private extension NSData {
 		assert(self.length >= atIndex + 8)
 		let buffer = UnsafeMutablePointer<UInt8>(self.bytes)
 		var read: UInt64 = 0
-		for(var i = 7; i >= 0; i--) {
+		for i in (0...7).reverse() {
 			read = (read << 8) + UInt64(buffer[atIndex + i])
 		}
 		return CFSwapInt64LittleToHost(read)
@@ -593,7 +594,7 @@ private extension NSData {
 		assert(self.length >= (atIndex + 4))
 		let buffer = UnsafeMutablePointer<UInt8>(self.bytes)
 		var read: UInt32 = 0
-		for(var i = 3; i >= 0; i--) {
+		for i in (0...3).reverse() {
 			read = (read << 8) + UInt32(buffer[atIndex + i])
 		}
 		return CFSwapInt32LittleToHost(read)
