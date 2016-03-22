@@ -34,9 +34,9 @@ public class R {
 		return dict
 	}
 
-	public static func connect(url: NSURL, callback: (String?, ReConnection) -> ()) {
+	public static func connect(url: NSURL, callback: (ReError?, ReConnection) -> ()) {
 		let c = ReConnection(url: url)
-		c.connect { (err) in
+		c.connect { err in
 			callback(err, c)
 		}
 	}

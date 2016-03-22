@@ -40,13 +40,130 @@ private struct ReTokenCounter {
 	}
 }
 
-public class ReConnection: NSObject, NSStreamDelegate {
+private enum ReSocketState {
+	case Unconnected
+	case Connecting
+	case Connected
+}
+
+private class ReSocket: GCDAsyncSocketDelegate {
+	typealias WriteCallback = (String?) -> ()
+	typealias ReadCallback = (NSData?) -> ()
+	private static let timeOut = 5.0
+
+	let socket: GCDAsyncSocket
+	private var state: ReSocketState = .Unconnected
+
+	private var onConnect: ((String?) -> ())?
+	private var writeCallbacks: [Int: WriteCallback] = [:]
+	private var readCallbacks: [Int: ReadCallback] = [:]
+
+	init(queue: dispatch_queue_t) {
+		self.socket = GCDAsyncSocket(delegate: nil, delegateQueue: queue)
+		self.socket.delegate = self
+	}
+
+	func connect(url: NSURL, callback: (String?) -> ()) {
+		assert(self.state == .Unconnected, "Already connected or connecting")
+		self.onConnect = callback
+		self.state = .Connecting
+
+		guard let host = url.host else { return callback("Invalid URL") }
+		let port = url.port ?? 28015
+
+		do {
+			try socket.connectToHost(host, onPort: port.unsignedShortValue)
+		}
+		catch let e as NSError {
+			return callback(e.localizedDescription)
+		}
+	}
+
+	@objc private func socket(sock: GCDAsyncSocket!, didConnectToHost host: String!, port: UInt16) {
+		self.state = .Connected
+		self.onConnect?(nil)
+	}
+
+	@objc private func socketDidDisconnect(sock: GCDAsyncSocket!, withError err: NSError!) {
+		self.state = .Unconnected
+	}
+
+	func read(length: Int, callback: ReadCallback)  {
+		assert(length > 0, "Length cannot be zero or less")
+
+		if self.state != .Connected {
+			return callback(nil)
+		}
+
+		dispatch_async(socket.delegateQueue) {
+			let tag = (self.readCallbacks.count + 1)
+			self.readCallbacks[tag] = callback
+			self.socket.readDataToLength(UInt(length), withTimeout: ReSocket.timeOut, tag: tag)
+		}
+	}
+
+	func readZeroTerminatedASCII(callback: (String?) -> ()) {
+		if self.state != .Connected {
+			return callback(nil)
+		}
+
+		let zero = NSData(bytes: [UInt8(0)], length: 1)
+		dispatch_async(socket.delegateQueue) {
+			let tag = (self.readCallbacks.count + 1)
+			self.readCallbacks[tag] = { data in
+				if let d = data {
+					let s = NSString(data: d.subdataWithRange(NSRange(location: 0, length: d.length - 1)), encoding: NSASCIIStringEncoding)!
+					callback(String(s))
+				}
+				else {
+					callback(nil)
+				}
+			}
+			self.socket.readDataToData(zero, withTimeout: ReSocket.timeOut, tag: tag)
+		}
+	}
+
+	func write(data: NSData, callback: WriteCallback) {
+		if self.state != .Connected {
+			return callback("socket is not connected!")
+		}
+
+		dispatch_async(socket.delegateQueue) {
+			let tag = (self.writeCallbacks.count + 1)
+			self.writeCallbacks[tag] = callback
+			self.socket.writeData(data, withTimeout: ReSocket.timeOut, tag: tag)
+		}
+	}
+
+	@objc private func socket(sock: GCDAsyncSocket!, didWriteDataWithTag tag: Int) {
+		dispatch_async(socket.delegateQueue) {
+			if let cb = self.writeCallbacks[tag] {
+				cb(nil)
+				self.writeCallbacks.removeValueForKey(tag)
+			}
+		}
+	}
+
+	@objc private func socket(sock: GCDAsyncSocket!, didReadData data: NSData!, withTag tag: Int) {
+		dispatch_async(socket.delegateQueue) {
+			if let cb = self.readCallbacks[tag] {
+				cb(data)
+				self.readCallbacks.removeValueForKey(tag)
+			}
+		}
+	}
+
+	deinit {
+		self.socket.disconnect()
+	}
+}
+
+public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 	public let url: NSURL
 	public var authenticationKey: String? { get { return self.url.user } }
 
-	private var inStream: ReInputStream! = nil
-	private var outStream: ReOutputStream! = nil
-	private var state: ReConnectionState = .Unconnected
+	private var state = ReConnectionState.Unconnected
+	private let socket: ReSocket
 	private var outstandingQueries: [ReQueryToken: ReResponse.Callback] = [:]
 	private var onConnectCallback: ((String?) -> ())? = nil
 
@@ -58,141 +175,122 @@ public class ReConnection: NSObject, NSStreamDelegate {
 	in the 'user' part of the URL, e.g. "rethinkdb://key@server:port". */
 	internal init(url: NSURL) {
 		self.url = url
+		self.socket = ReSocket(queue: self.queue)
 	}
 
-	internal func connect(callback: (String?) -> ()) {
-		assert(!self.state.connected)
-		onConnectCallback = callback
+	internal func connect(callback: (ReError?) -> ()) {
+		self.socket.connect(self.url) { err in
+			if let e = err {
+				return callback(ReError.Fatal(e))
+			}
 
-		let port = (url.port ?? ReProtocol.defaultPort).integerValue
-		assert(port < 65536)
+			// Start authentication
+			guard let data = NSMutableData(capacity: 128) else {
+				let e = ReError.Fatal("Could not create data object")
+				self.state = .Error(e)
+				return callback(e)
+			}
 
-		guard let hostname = url.host else {
-			self.inStream = nil
-			self.outStream = nil
-			self.onConnectCallback = nil
-			callback("Invalid URL")
-			return
-		}
+			// Append protocol version
+			data.appendData(NSData.dataWithLittleEndianOf(UInt32(ReProtocol.protocolVersion)))
 
-		// Create a pair of streams to read/write to the database
-		var readStream: Unmanaged<CFReadStreamRef>?
-		var writeStream: Unmanaged<CFWriteStreamRef>?
-		CFStreamCreatePairWithSocketToHost(nil, hostname, UInt32(port), &readStream, &writeStream)
+			// Append authentication key length and the key itself (as ASCII)
+			if let authKey = self.authenticationKey?.dataUsingEncoding(NSASCIIStringEncoding) {
+				data.appendData(NSData.dataWithLittleEndianOf(UInt32(authKey.length)))
+				data.appendData(authKey)
+			}
+			else {
+				data.appendData(NSData.dataWithLittleEndianOf(UInt32(0)))
+			}
 
-		if let r = readStream, w = writeStream {
-			let inStream: NSInputStream = r.takeRetainedValue()
-			let outStream: NSOutputStream = w.takeRetainedValue()
-			inStream.delegate = self
-			outStream.delegate = self
-			self.outStream = ReOutputStream(stream: outStream)
-			self.inStream = ReInputStream(stream: inStream)
-
-
-			dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) { [weak self] in
-				inStream.scheduleInRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
-				outStream.scheduleInRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
-				inStream.open()
-				outStream.open()
-				if let s = self {
-					s.state.onReceive(s)
+			// Append protocol type (JSON)
+			data.appendData(NSData.dataWithLittleEndianOf(UInt32(ReProtocol.protocolType)))
+			self.socket.write(data) { err in
+				if let e = err {
+					self.state = .Error(ReError.Fatal(e))
+					return callback(ReError.Fatal(e))
 				}
 
-				while self != nil {
-					if !NSRunLoop.currentRunLoop().runMode(NSDefaultRunLoopMode, beforeDate: NSDate(timeInterval: 5.0, sinceDate: NSDate())) {
-						break
+				self.state = .HandshakeSent
+
+				// Let's see if we get a reply
+				if self.socket.state == .Connected {
+					self.socket.readZeroTerminatedASCII() { s in
+						if s == ReProtocol.handshakeSuccessResponse {
+							// Start read loop
+							self.state = .Connected
+							self.startReading()
+							return callback(nil)
+						}
+						else {
+							let e = ReError.Fatal("Handshake failed, server returned: \(s)")
+							self.state = .Error(e)
+							return callback(e)
+						}
 					}
 				}
-
-				#if DEBUG
-				print("Runloop end")
-				#endif
 			}
 		}
-		else {
-			inStream = nil
-			outStream = nil
-			callback("connection failed")
-			self.onConnectCallback = nil
-		}
 	}
 
-	public func close() {
-		dispatch_async(queue) {
-			self.state = .Terminated
-			self.inStream = nil
-			self.outStream = nil
-			self.onConnectCallback = nil
-			self.outstandingQueries.removeAll()
+	public var connected: Bool {
+		if case ReConnectionState.Connected = state {
+			return true
 		}
+		return false
 	}
 
-	public var connected: Bool { get {
-		return self.state.connected
-		} }
-
-	public var error: ReError? { get {
+	public var error: ReError? {
 		return self.state.error
-		} }
+	}
 
-	public func stream(aStream: NSStream, handleEvent eventCode: NSStreamEvent) {
-		dispatch_sync(self.queue) {
-			do {
-				switch eventCode {
-				case NSStreamEvent.ErrorOccurred:
-					throw aStream.streamError!
+	private func startReading() {
+		self.socket.read(8 + 4) { data in
+			if let d = data {
+				let queryToken = d.readLittleEndianUInt64(0)
+				let responseSize = d.readLittleEndianUInt32(8)
 
-				case NSStreamEvent.OpenCompleted:
-					break;
+				self.socket.read(Int(responseSize), callback: { data in
+					if let d = data {
+						assert(d.length == Int(responseSize))
 
-				case NSStreamEvent.HasBytesAvailable:
-					if aStream == self.inStream?.stream {
-						self.inStream.read()
-						self.state.onReceive(self)
-						if self.connected {
-							if let cc = self.onConnectCallback {
-								cc(nil)
-								self.onConnectCallback = nil
+						var called = false
+						let continuation: ReResponse.ContinuationCallback = { [weak self] (cb: ReResponse.Callback) -> () in
+							assert(!called, "continuation callback for query token \(queryToken) must never be called more than once")
+							called = true
+							self?.sendContinuation(queryToken, callback: cb)
+						}
+
+						dispatch_async(self.queue) {
+							if let handler = self.outstandingQueries[queryToken] {
+								if let response = ReResponse(json: d, continuation: continuation) {
+									self.outstandingQueries.removeValueForKey(queryToken)
+									handler(response)
+									self.startReading()
+								}
+								else {
+									self.state = .Error(ReError.Fatal("Invalid response object from server"))
+								}
+							}
+							else {
+								fatalError("No handler found for server response. This should never happen unless server is behaving badly.")
 							}
 						}
 					}
-
-				case NSStreamEvent.HasSpaceAvailable:
-					if aStream == self.outStream?.stream {
-						self.outStream.write()
+					else {
+						self.state = .Error(ReError.Fatal("Disconnected"))
 					}
-
-				case NSStreamEvent.EndEncountered:
-					self.state = .Terminated
-
-				default:
-					throw ReError.Fatal("unhandled stream event: \(eventCode)")
-				}
+				})
 			}
-			catch ReError.Fatal(let m) {
-				if let cc = self.onConnectCallback {
-					cc(m)
-					self.onConnectCallback = nil
-				}
-				else {
-					fatalError("An error occurred: \(m)")
-				}
-			}
-			catch let e as NSError {
-				if let cc = self.onConnectCallback {
-					cc(e.localizedDescription)
-					self.onConnectCallback = nil
-				}
-				else {
-					fatalError("An error occurred: \(self.error)")
-				}
+			else {
+				self.state = .Error(ReError.Fatal("Disconnected"))
 			}
 		}
 	}
 
-	private func sendContinuation(token: ReQueryToken, callback: ReResponse.Callback) throws {
+	private func sendContinuation(token: ReQueryToken, callback: ReResponse.Callback) {
 		let json = [ReProtocol.ReQueryType.CONTINUE.rawValue];
-		let query = try NSJSONSerialization.dataWithJSONObject(json, options: [])
+		let query = try! NSJSONSerialization.dataWithJSONObject(json, options: [])
 		self.sendQuery(query, token: token, callback: callback)
 	}
 
@@ -211,11 +309,19 @@ public class ReConnection: NSObject, NSStreamDelegate {
 				callback(res)
 			}
 
-			self.outstandingQueries[token] = reffingCallback
+
 			data.appendData(NSData.dataWithLittleEndianOf(token))
 			data.appendData(NSData.dataWithLittleEndianOf(UInt32(query.length)))
 			data.appendData(query)
-			self.outStream.send(data)
+			self.socket.write(data) { err in
+				if let e = err {
+					self.state = .Error(ReError.Fatal(e))
+					callback(ReResponse.Error(e))
+				}
+				else {
+					self.outstandingQueries[token] = reffingCallback
+				}
+			}
 		}
 	}
 
@@ -231,21 +337,10 @@ private enum ReConnectionState {
 	case Unconnected // Nothing has been done yet
 	case HandshakeSent // Our handshake has been sent, we are waiting for confirmation of success
 	case Connected // Handshake has been completed, and we are awaiting respones from the server
-	case Receiving(UInt64, UInt32) // Server is sending us data for the query (Query token, response length)
 	case Error(ReError) // A protocol error has occurred
 	case Terminated // The connection has been terminated
 
-	var connected: Bool { get {
-		switch self {
-		case .Connected, .Receiving(_, _):
-			return true
-
-		default:
-			return false
-		}
-		} }
-
-	var error: ReError? { get {
+	var error: ReError? {
 		switch self {
 		case .Error(let e):
 			return e
@@ -253,214 +348,12 @@ private enum ReConnectionState {
 		default:
 			return nil
 		}
-		} }
-
-	mutating func onReceive(database: ReConnection) {
-		switch self {
-		case .Unconnected:
-			// Start authentication
-			guard let data = NSMutableData(capacity: 128) else {
-				self = .Error(ReError.Fatal("Could not create data object"));
-				return
-			}
-
-			// Append protocol version
-			data.appendData(NSData.dataWithLittleEndianOf(UInt32(ReProtocol.protocolVersion)))
-
-			// Append authentication key length and the key itself (as ASCII)
-			if let authKey = database.authenticationKey?.dataUsingEncoding(NSASCIIStringEncoding) {
-				data.appendData(NSData.dataWithLittleEndianOf(UInt32(authKey.length)))
-				data.appendData(authKey)
-			}
-			else {
-				data.appendData(NSData.dataWithLittleEndianOf(UInt32(0)))
-			}
-
-			// Append protocol type (JSON)
-			data.appendData(NSData.dataWithLittleEndianOf(UInt32(ReProtocol.protocolType)))
-			database.outStream.send(data)
-			self = .HandshakeSent
-
-		case .HandshakeSent:
-			if let s = database.inStream.consumeZeroTerminatedASCII() {
-				if s == ReProtocol.handshakeSuccessResponse {
-					self = .Connected
-				}
-				else {
-					self = .Error(ReError.Fatal("Handshake failed, server returned: \(s)"))
-				}
-			}
-			break
-
-		case .Connected:
-			if let d = database.inStream.consumeData(8 + 4) {
-				let queryToken = d.readLittleEndianUInt64(0)
-				let responseSize = d.readLittleEndianUInt32(8)
-				self = .Receiving(queryToken, responseSize)
-				self.onReceive(database)
-			}
-			break
-
-		case .Receiving(let queryToken, let size):
-			if database.inStream.buffer.availableBytes() >= Int(size) {
-				let d = database.inStream.consumeData(Int(size))!
-				assert(d.length == Int(size))
-				self = .Connected
-				var called = false
-				let continuation: ReResponse.ContinuationCallback = { [weak database] (callback: ReResponse.Callback) -> () in
-					assert(!called, "continuation callback for query token \(queryToken) must never be called more than once")
-					called = true
-					do {
-						try database?.sendContinuation(queryToken, callback: callback)
-					}
-					catch {
-						callback(ReResponse.Error("Could not send continuation"))
-					}
-				}
-				
-				dispatch_async(database.queue) {
-					if let handler = database.outstandingQueries[queryToken] {
-						if let response = ReResponse(json: d, continuation: continuation) {
-							database.outstandingQueries.removeValueForKey(queryToken)
-							handler(response)
-						}
-						else {
-							self = .Error(ReError.Fatal("Invalid response object from server"))
-						}
-					}
-					else {
-						fatalError("No handler found for server response. This should never happen unless server is behaving badly.")
-					}
-
-					self.onReceive(database)
-				}
-			}
-			else {
-				// Need more data for this query token before we can continue
-			}
-			break
-
-		case .Terminated:
-			break
-
-		case .Error:
-			break
-		}
 	}
 }
 
 public enum ReError: ErrorType {
 	case Fatal(String)
 	case Other(ErrorType)
-}
-
-private class ReInputStream: NSObject {
-	typealias Callback = (ReInputStream) -> ()
-	let stream: NSInputStream
-	private var error: ReError? = nil
-	private let queue = dispatch_queue_create("nl.pixelspark.Rethink.ReInputStream", DISPATCH_QUEUE_SERIAL)
-	private var buffer: MAMirroredQueue
-
-	init(stream: NSInputStream) {
-		self.stream = stream
-		self.buffer = MAMirroredQueue()
-		super.init()
-	}
-
-	private func read() {
-		dispatch_sync(self.queue) {
-			while self.stream.hasBytesAvailable {
-				let buffer = NSMutableData(length: 512)!
-				let read = self.stream.read(UnsafeMutablePointer<UInt8>(buffer.mutableBytes), maxLength: buffer.length)
-				if read > 0 {
-					self.buffer.write(buffer.bytes, count: read)
-				}
-			}
-		}
-	}
-
-	private func consumeData(length: Int) -> NSData? {
-		var ret: NSData? = nil
-		dispatch_sync(self.queue) {
-			assert(length>0)
-			if self.buffer.availableBytes() >= length {
-				let sliced = NSData(bytes: self.buffer.readPointer(), length: length)
-				self.buffer.advanceReadPointer(length)
-				ret = sliced
-				return
-			}
-		}
-		return ret
-	}
-
-	private func consumeZeroTerminatedASCII() -> String? {
-		var ret: String? = nil
-		dispatch_sync(self.queue) {
-			let bytes = UnsafePointer<UInt8>(self.buffer.readPointer())
-
-			for i in 0..<self.buffer.availableBytes() {
-				if bytes[i] == 0 {
-					if let x = NSString(bytes: bytes, length: i, encoding: NSASCIIStringEncoding) {
-						self.buffer.advanceReadPointer(i+1)
-						ret = x as String
-						return
-					}
-					return
-				}
-			}
-			return
-		}
-		return ret
-	}
-
-	private func checkError() throws {
-		if let e = self.error {
-			throw e
-		}
-		if let e = self.stream.streamError {
-			throw ReError.Other(e)
-		}
-	}
-
-	deinit {
-		self.stream.close()
-	}
-}
-
-private class ReOutputStream: NSObject {
-	let stream: NSOutputStream
-	private var error: ReError? = nil
-	private var outQueue: MAMirroredQueue
-	private let queue = dispatch_queue_create("nl.pixelspark.Rethink.ReOutputStream", DISPATCH_QUEUE_SERIAL)
-
-	init(stream: NSOutputStream) {
-		self.stream = stream
-		self.outQueue = MAMirroredQueue()
-		super.init()
-	}
-
-	deinit {
-		self.stream.close()
-	}
-
-	private func send(data: NSData) {
-		dispatch_async(self.queue) {
-			self.outQueue.write(data.bytes, count: data.length)
-			self.write()
-		}
-	}
-
-	private func write() {
-		dispatch_async(self.queue) {
-			while self.stream.hasSpaceAvailable && self.outQueue.availableBytes()>0 {
-				let bytesWritten = self.stream.write(UnsafePointer<UInt8>(self.outQueue.readPointer()), maxLength: self.outQueue.availableBytes())
-
-				if bytesWritten > 0 {
-					self.outQueue.advanceReadPointer(bytesWritten)
-				}
-			}
-		}
-	}
 }
 
 public enum ReResponse {
@@ -537,14 +430,14 @@ public enum ReResponse {
 		}
 	}
 
-	public var isError: Bool { get {
+	public var isError: Bool {
 		switch self {
 		case .Error(_): return true
 		default: return false
 		}
-		} }
+	}
 
-	public var value: AnyObject? { get {
+	public var value: AnyObject? {
 		switch self {
 		case .Value(let v):
 			return v
@@ -552,7 +445,7 @@ public enum ReResponse {
 		default:
 			return nil
 		}
-		} }
+	}
 }
 
 private extension NSData {

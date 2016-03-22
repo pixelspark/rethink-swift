@@ -3,5 +3,4 @@
 FOUNDATION_EXPORT double RethinkVersionNumber;
 FOUNDATION_EXPORT const unsigned char RethinkVersionString[];
 
-#import "MAMirroredQueue.h"
-#import "AllocateMirrored.h"
+#import "GCDAsyncSocket.h"
