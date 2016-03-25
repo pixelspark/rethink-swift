@@ -1,7 +1,9 @@
 Rethink.swift
 -------------
 
-A Swift client driver for RethinkDB.
+A client driver for RethinkDB in Swift.
+
+Looking for a Mac app to easily query RethinkDB? Convert and analyze large data sets at the speed of light with [Warp](http://warp.one). 
 
 ### Usage
 
@@ -44,9 +46,9 @@ self.connection = R.connect(NSURL(string: "rethinkdb://localhost:28016")!) { err
 
 ### Status
 
-This is a very early version of the driver. It implements the V0_4 basic structure (based on JSON). It currently supports
-the most basic commands (e.g. creation of tables, databases, ..). No extra option arguments are currently supported (but 
-can easily be added to the driver code). Do not use in production code!
+This is an early but functional and quite reliable version of the driver. It implements the V0_4 protocol (based on JSON). It currently supports
+the most basic commands (e.g. creation of tables, databases, ..). Not all of the extra option arguments are currently supported (but these
+can easily be added to the driver code).
 
 ### Installation
 
@@ -56,7 +58,7 @@ You should then be able to simply 'import Rethink' from Swift code.
 ### License
 
 ```
-Rethink.swift. Copyright (c) 2015 Pixelspark
+Rethink.swift. Copyright (c) 2015-2016 Pixelspark
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
@@ -77,9 +79,6 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 ```
-
-Rethink.swift uses an [efficient ring buffer implementation](https://github.com/mikeash/MAMirroredQueue) for managing 
-data buffers by Mike Ash under a BSD license.
 
 ### FAQ
 
