@@ -172,6 +172,14 @@ public class R {
 	public static func grant(userName: String, permissions: RePermission...) -> ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.GRANT.rawValue, [userName], R.optargs(permissions)])
 	}
+
+	public static var minVal: ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.MINVAL.rawValue])
+	}
+
+	public static var maxVal: ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.MAXVAL.rawValue])
+	}
 }
 
 public class ReQueryDatabase: ReQuery {
