@@ -72,6 +72,19 @@ public enum ReIndexCreateArg: ReArg {
 	}
 }
 
+public enum ReIndexRenameArg: ReArg {
+	/** If the optional argument overwrite is specified as true, a previously existing index with the new name will be 
+	deleted and the index will be renamed. If overwrite is false (the default) an error will be raised if the new index 
+	name already exists. */
+	case Overwrite(Bool)
+
+	public var serialization: (String, AnyObject) {
+		switch self {
+		case .Overwrite(let o): return ("overwrite", o)
+		}
+	}
+}
+
 public enum RePermission: ReArg {
 	case Read(Bool)
 	case Write(Bool)

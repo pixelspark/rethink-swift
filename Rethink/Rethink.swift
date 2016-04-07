@@ -377,8 +377,9 @@ public class ReQueryTable: ReQuerySequence {
 		return ReQuerySequence(jsonSerialization: [ReTerm.INDEX_LIST.rawValue, [self.jsonSerialization]])
 	}
 
-	public func indexRename(renameIndex: String, to: String) -> ReQueryValue {
-		return ReDatum(jsonSerialization: [ReTerm.INDEX_RENAME.rawValue, [self.jsonSerialization, renameIndex, to]])
+	/** Rename an existing secondary index on a table.  */
+	public func indexRename(renameIndex: String, to: String, options: ReIndexRenameArg...) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.INDEX_RENAME.rawValue, [self.jsonSerialization, renameIndex, to], R.optargs(options)])
 	}
 
 	public func indexStatus() -> ReQueryValue {
