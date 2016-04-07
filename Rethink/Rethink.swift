@@ -353,6 +353,18 @@ public class ReQueryTable: ReQuerySequence {
 		return ReDatum(jsonSerialization: [ReTerm.REPLACE.rawValue, [self.jsonSerialization, changes]])
 	}
 
+	/** Create a new secondary index on a table. Secondary indexes improve the speed of many read queries at the slight 
+	cost of increased storage space and decreased write performance. 
+	
+	The indexFunction can be an anonymous function or a binary representation obtained from the function field of 
+	indexStatus. If successful, createIndex will return an object of the form {"created": 1}. */
+	public func indexCreate(indexName: String, indexFunction: ReQueryLambda? = nil, options: ReIndexCreateArg...) -> ReQueryValue {
+		if let fn = indexFunction {
+			 return ReDatum(jsonSerialization: [ReTerm.INDEX_CREATE.rawValue, [self.jsonSerialization, indexName, fn.jsonSerialization], R.optargs(options)])
+		}
+		return ReDatum(jsonSerialization: [ReTerm.INDEX_CREATE.rawValue, [self.jsonSerialization, indexName], R.optargs(options)])
+	}
+
 	public func indexWait() -> ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.INDEX_WAIT.rawValue, [self.jsonSerialization]])
 	}

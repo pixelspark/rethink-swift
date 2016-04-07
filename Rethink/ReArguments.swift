@@ -60,6 +60,18 @@ public enum ReTableCreateArg: ReArg {
 	}
 }
 
+public enum ReIndexCreateArg: ReArg {
+	case Multi(Bool)
+	case Geo(Bool)
+
+	public var serialization: (String, AnyObject) {
+		switch self {
+		case .Multi(let m): return ("multi", m)
+		case .Geo(let g): return ("geo", g)
+		}
+	}
+}
+
 public enum RePermission: ReArg {
 	case Read(Bool)
 	case Write(Bool)
