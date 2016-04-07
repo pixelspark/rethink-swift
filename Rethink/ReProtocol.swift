@@ -224,4 +224,6 @@ internal enum ReTerm: Int {
 	case POLYGON_SUB = 171
 	case MINVAL = 180
 	case MAXVAL = 181
+	case GRANT = 187
+
 }

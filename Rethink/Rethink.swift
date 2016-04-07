@@ -168,6 +168,10 @@ public class R {
 	public static func json(source: String) -> ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.JSON.rawValue, [source]])
 	}
+
+	public static func grant(userName: String, permissions: RePermission...) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.GRANT.rawValue, [userName], R.optargs(permissions)])
+	}
 }
 
 public enum ReTableReadMode: String {
@@ -230,6 +234,22 @@ public enum ReTableCreateArg: ReArg {
 	}
 }
 
+public enum RePermission: ReArg {
+	case Read(Bool)
+	case Write(Bool)
+	case Connect(Bool)
+	case Config(Bool)
+
+	public var serialization: (String, AnyObject) {
+		switch self {
+		case .Read(let b): return ("read", b)
+		case .Write(let b): return ("write", b)
+		case .Connect(let b): return ("connect", b)
+		case .Config(let b): return ("config", b)
+		}
+	}
+}
+
 public class ReQueryDatabase: ReQuery {
 	public let jsonSerialization: AnyObject
 
@@ -259,6 +279,10 @@ public class ReQueryDatabase: ReQuery {
 
 	public func rebalance() -> ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.REBALANCE.rawValue, [self.jsonSerialization]])
+	}
+
+	public func grant(userName: String, permissions: RePermission...) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.GRANT.rawValue, [self.jsonSerialization, userName], R.optargs(permissions)])
 	}
 }
 
@@ -438,6 +462,10 @@ public class ReQueryTable: ReQuerySequence {
 
 	public override func distinct() -> ReQueryStream {
 		return ReQueryStream(jsonSerialization: [ReTerm.DISTINCT.rawValue, [self.jsonSerialization]])
+	}
+
+	public func grant(userName: String, permissions: RePermission...) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.GRANT.rawValue, [self.jsonSerialization, userName], R.optargs(permissions)])
 	}
 }
 
