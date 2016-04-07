@@ -299,6 +299,15 @@ public class ReQuerySequence: ReQuery {
 	public func changes(options: ReChangesArg...) -> ReQueryStream {
 		return ReQueryStream(jsonSerialization: [ReTerm.CHANGES.rawValue, [self.jsonSerialization], R.optargs(options)])
 	}
+
+	/** In its first form, fold operates like reduce, returning a value by applying a combining function to each element 
+	in a sequence, passing the current element and the previous reduction result to the function. However, fold has the 
+	following differences from reduce:
+	- it is guaranteed to proceed through the sequence from first element to last.
+	- it passes an initial base value to the function with the first element in place of the previous reduction result. */
+	public func fold(base: ReQueryValue, accumulator: ReQueryLambda, options: ReFoldArg...) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.FOLD.rawValue, [self.jsonSerialization, base.jsonSerialization, accumulator.jsonSerialization], R.optargs(options)])
+	}
 }
 
 public class ReQuerySelection: ReQuerySequence {

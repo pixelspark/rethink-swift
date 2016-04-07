@@ -132,6 +132,22 @@ public enum ReChangesArg: ReArg {
 		case .IncludeTypes(let b): return ("include_types", b)
 		}
 	}
+}
 
+public enum ReFoldArg: ReArg {
+	/** When an emit function is provided, fold will:
+	- proceed through the sequence in order and take an initial base value, as above.
+	- for each element in the sequence, call both the combining function and a separate emitting function with the current 
+	  element and previous reduction result.
+	- optionally pass the result of the combining function to the emitting function.
+	If provided, the emitting function must return a list. */
+	case Emit(ReQueryLambda)
+	case FinalEmit(ReQueryLambda)
 
+	public var serialization: (String, AnyObject) {
+		switch self {
+		case .Emit(let r): return ("emit", r)
+		case .FinalEmit(let r): return ("final_emit", r)
+		}
+	}
 }
