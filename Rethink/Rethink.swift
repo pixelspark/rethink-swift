@@ -271,8 +271,8 @@ public class ReQuerySequence: ReQuery {
 		return ReQueryStream(jsonSerialization: [ReTerm.OUTER_JOIN.rawValue, [self.jsonSerialization, foreign.jsonSerialization, ReQueryLambda(block: predicate).jsonSerialization]])
 	}
 
-	public func eqJoin(leftField: ReQueryValue, foreign: ReQueryTable) -> ReQuerySequence {
-		return ReQuerySequence(jsonSerialization: [ReTerm.EQ_JOIN.rawValue, [self.jsonSerialization, leftField.jsonSerialization, foreign.jsonSerialization]])
+	public func eqJoin(leftField: ReQueryValue, foreign: ReQueryTable, options: ReEqJoinArg...) -> ReQuerySequence {
+		return ReQuerySequence(jsonSerialization: [ReTerm.EQ_JOIN.rawValue, [self.jsonSerialization, leftField.jsonSerialization, foreign.jsonSerialization], R.optargs(options)])
 	}
 
 	public func map(mapper: ReQueryLambda) -> ReQuerySequence {

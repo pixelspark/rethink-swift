@@ -151,3 +151,20 @@ public enum ReFoldArg: ReArg {
 		}
 	}
 }
+
+public enum ReEqJoinArg: ReArg {
+	/** The results from eqJoin are, by default, not ordered. The optional ordered: true parameter will cause eqJoin to 
+	order the output based on the left side input stream. (If there are multiple matches on the right side for a document 
+	on the left side, their order is not guaranteed even if ordered is true.) Requiring ordered results can significantly 
+	slow down eqJoin, and in many circumstances this ordering will not be required. (See the first example, in which 
+	ordered results are obtained by using orderBy after eqJoin.) */
+	case Ordered(Bool)
+	case Index(String)
+
+	public var serialization: (String, AnyObject) {
+		switch self {
+		case .Ordered(let o): return ("ordered", o)
+		case .Index(let i): return ("index", i)
+		}
+	}
+}
