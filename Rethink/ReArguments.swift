@@ -193,3 +193,79 @@ public enum ReEqJoinArg: ReArg {
 		}
 	}
 }
+
+public enum ReDurability: String {
+	case Hard = "hard"
+	case Soft = "soft"
+}
+
+public enum ReConflictResolution: String {
+	/** Do not insert the new document and record the conflict as an error. This is the default. */
+	case Error = "error"
+
+	/** Replace the old document in its entirety with the new one. */
+	case Replace = "replace"
+
+	/** Update fields of the old document with fields from the new one. */
+	case Update = "update"
+}
+
+public enum ReInsertArg: ReArg {
+	/** This option will override the table or query’s durability setting (set in run). In soft durability mode RethinkDB 
+	will acknowledge the write immediately after receiving and caching it, but before the write has been committed to disk. */
+	case Durability(ReDurability)
+
+	/** true: return a changes array consisting of old_val/new_val objects describing the changes made, only including the 
+	documents actually updated. false: do not return a changes array (the default). */
+	case ReturnChanges(Bool)
+
+	/** Determine handling of inserting documents with the same primary key as existing entries.  */
+	case Conflict(ReConflictResolution)
+
+	public var serialization: (String, AnyObject) {
+		switch self {
+		case .Durability(let d): return ("durability", d.rawValue)
+		case .ReturnChanges(let r): return ("return_changes", r)
+		case .Conflict(let r): return ("conflict", r.rawValue)
+		}
+	}
+}
+
+public enum ReUpdateArg: ReArg {
+	/** This option will override the table or query’s durability setting (set in run). In soft durability mode RethinkDB
+	will acknowledge the write immediately after receiving and caching it, but before the write has been committed to disk. */
+	case Durability(ReDurability)
+
+	/** true: return a changes array consisting of old_val/new_val objects describing the changes made, only including the
+	documents actually updated. false: do not return a changes array (the default). */
+	case ReturnChanges(Bool)
+
+	/** If set to true, executes the update and distributes the result to replicas in a non-atomic fashion. This flag is 
+	required to perform non-deterministic updates, such as those that require reading data from another table. */
+	case NonAtomic(Bool)
+
+	public var serialization: (String, AnyObject) {
+		switch self {
+		case .Durability(let d): return ("durability", d.rawValue)
+		case .ReturnChanges(let r): return ("return_changes", r)
+		case .NonAtomic(let b): return ("non_atomic", b)
+		}
+	}
+}
+
+public enum ReDeleteArg: ReArg {
+	/** This option will override the table or query’s durability setting (set in run). In soft durability mode RethinkDB
+	will acknowledge the write immediately after receiving and caching it, but before the write has been committed to disk. */
+	case Durability(ReDurability)
+
+	/** true: return a changes array consisting of old_val/new_val objects describing the changes made, only including the
+	documents actually updated. false: do not return a changes array (the default). */
+	case ReturnChanges(Bool)
+
+	public var serialization: (String, AnyObject) {
+		switch self {
+		case .Durability(let d): return ("durability", d.rawValue)
+		case .ReturnChanges(let r): return ("return_changes", r)
+		}
+	}
+}

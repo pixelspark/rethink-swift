@@ -300,8 +300,8 @@ public class ReQuerySequence: ReQuery {
 		return ReQueryStream(jsonSerialization: [ReTerm.UNION.rawValue, [self.jsonSerialization, sequence.jsonSerialization]])
 	}
 
-	public func delete() -> ReQueryValue {
-		return ReDatum(jsonSerialization: [ReTerm.DELETE.rawValue, [self.jsonSerialization]])
+	public func delete(options: ReDeleteArg...) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.DELETE.rawValue, [self.jsonSerialization], R.optargs(options)])
 	}
 
 	public func changes(options: ReChangesArg...) -> ReQueryStream {
@@ -337,20 +337,30 @@ public class ReQueryTable: ReQuerySequence {
 		super.init(jsonSerialization: [ReTerm.TABLE.rawValue, [database.jsonSerialization, name], x])
 	}
 
-	public func insert(documents: [ReDocument]) -> ReQueryValue {
-		return ReDatum(jsonSerialization: [ReTerm.INSERT.rawValue, [self.jsonSerialization, [ReTerm.MAKE_ARRAY.rawValue, documents]]])
+	/** Insert documents into a table. */
+	public func insert(documents: [ReDocument], options: ReInsertArg...) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.INSERT.rawValue, [self.jsonSerialization, [ReTerm.MAKE_ARRAY.rawValue, documents]], R.optargs(options)])
 	}
 
-	public func insert(objects: [ReQueryValue]) -> ReQueryValue {
-		return ReDatum(jsonSerialization: [ReTerm.INSERT.rawValue, [self.jsonSerialization, [ReTerm.MAKE_ARRAY.rawValue, objects.map { return $0.jsonSerialization }]]])
+	/** Insert documents into a table. */
+	public func insert(objects: [ReQueryValue], options: ReInsertArg...) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.INSERT.rawValue, [self.jsonSerialization, [ReTerm.MAKE_ARRAY.rawValue, objects.map { return $0.jsonSerialization }]], R.optargs(options)])
 	}
 
-	public func update(changes: ReDocument) -> ReQueryValue {
-		return ReDatum(jsonSerialization: [ReTerm.UPDATE.rawValue, [self.jsonSerialization, changes]])
+	/** Update JSON documents in a table. Accepts a JSON document, a ReQL expression, or a combination of the two. */
+	public func update(changes: ReDocument, options: ReUpdateArg...) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.UPDATE.rawValue, [self.jsonSerialization, changes], R.optargs(options)])
 	}
 
-	public func replace(changes: ReDocument) -> ReQueryValue {
-		return ReDatum(jsonSerialization: [ReTerm.REPLACE.rawValue, [self.jsonSerialization, changes]])
+	/** Replace documents in a table. Accepts a JSON document or a ReQL expression, and replaces the original document with
+	 the new one. The new document must have the same primary key as the original document.
+
+	The replace command can be used to both insert and delete documents. If the “replaced” document has a primary key that 
+	doesn’t exist in the table, the document will be inserted; if an existing document is replaced with null, the document 
+	will be deleted. Since update and replace operations are performed atomically, this allows atomic inserts and deletes 
+	as well. */
+	public func replace(changes: ReDocument, options: ReUpdateArg...) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.REPLACE.rawValue, [self.jsonSerialization, changes], R.optargs(options)])
 	}
 
 	/** Create a new secondary index on a table. Secondary indexes improve the speed of many read queries at the slight 
@@ -382,8 +392,12 @@ public class ReQueryTable: ReQuerySequence {
 		return ReDatum(jsonSerialization: [ReTerm.INDEX_RENAME.rawValue, [self.jsonSerialization, renameIndex, to], R.optargs(options)])
 	}
 
-	public func indexStatus() -> ReQueryValue {
-		return ReDatum(jsonSerialization: [ReTerm.INDEX_STATUS.rawValue, [self.jsonSerialization]])
+	/** Get the status of the specified indexes on this table, or the status of all indexes on this table if no indexes 
+	are specified. */
+	public func indexStatus(indices: String...) -> ReQueryValue {
+		var params: [AnyObject] = [self.jsonSerialization]
+		indices.forEach { params.append($0) }
+		return ReDatum(jsonSerialization: [ReTerm.INDEX_STATUS.rawValue, params])
 	}
 
 	public func status() -> ReQuerySelection {
@@ -435,8 +449,8 @@ public class ReQueryRow: ReDatum {
 		return ReDatum(jsonSerialization: [ReTerm.UPDATE.rawValue, [self.jsonSerialization, changes]])
 	}
 
-	public func delete() -> ReQueryValue {
-		return ReDatum(jsonSerialization: [ReTerm.DELETE.rawValue, [self.jsonSerialization]])
+	public func delete(options: ReDeleteArg...) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.DELETE.rawValue, [self.jsonSerialization], R.optargs(options)])
 	}
 
 	public func keys() -> ReQueryValue {
