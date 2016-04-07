@@ -48,6 +48,8 @@ internal class ReProtocol {
 	}
 }
 
+/** These constants can be found in the RethinkDB Java driver source code:
+https://github.com/rethinkdb/rethinkdb/blob/next/drivers/java/term_info.json */
 internal enum ReTerm: Int {
 	case DATUM = 1
 	case MAKE_ARRAY = 2
@@ -224,6 +226,7 @@ internal enum ReTerm: Int {
 	case POLYGON_SUB = 171
 	case MINVAL = 180
 	case MAXVAL = 181
-	case GRANT = 187
+	case FOLD = 187
+	case GRANT = 188
 
 }
