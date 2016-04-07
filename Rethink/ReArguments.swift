@@ -269,3 +269,65 @@ public enum ReDeleteArg: ReArg {
 		}
 	}
 }
+
+public enum ReUnit: String {
+	case Meter = "m"
+	case Kilometer = "km"
+	case InternationalMile = "mi"
+	case NauticalMile = "nm"
+	case InternationalFoot = "ft"
+}
+
+public enum ReGeoSystem: String {
+	case WGS84 = "WGS84"
+	case UnitSphere = "unit_sphere"
+}
+
+public enum ReCircleArg: ReArg {
+	/** The number of vertices in the polygon or line. Defaults to 32. */
+	case NumVertices(Int)
+
+	/** The reference ellipsoid to use for geographic coordinates. Possible values are WGS84 (the default), a common 
+	standard for Earth’s geometry, or unit_sphere, a perfect sphere of 1 meter radius. */
+	case GeoSystem(ReGeoSystem)
+
+	/** Unit for the radius distance. */
+	case Unit(ReUnit)
+
+	/** If true (the default) the circle is filled, creating a polygon; if false the circle is unfilled (creating a line). */
+	case Fill(Bool)
+
+	public var serialization: (String, AnyObject) {
+		switch self {
+		case .NumVertices(let n): return ("num_vertices", n)
+		case .GeoSystem(let s): return ("geo_system", s.rawValue)
+		case .Unit(let u): return ("unit", u.rawValue)
+		case .Fill(let b): return ("fill", b)
+		}
+	}
+}
+
+public enum ReDistanceArg: ReArg {
+	case GeoSystem(ReGeoSystem)
+	case Unit(ReUnit)
+
+	public var serialization: (String, AnyObject) {
+		switch self {
+		case .GeoSystem(let s): return ("geo_system", s.rawValue)
+		case .Unit(let u): return ("unit", u.rawValue)
+		}
+	}
+}
+
+public enum ReIntersectingArg: ReArg {
+	/** The index argument is mandatory. This command returns the same results as 
+	table.filter(r.row('index').intersects(geometry)). The total number of results is limited to the array size limit which 
+	defaults to 100,000, but can be changed with the arrayLimit option to run. */
+	case Index(String)
+
+	public var serialization: (String, AnyObject) {
+		switch self {
+		case .Index(let s): return ("index", s)
+		}
+	}
+}

@@ -180,6 +180,54 @@ public class R {
 	public static var maxVal: ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.MAXVAL.rawValue])
 	}
+
+	/** Construct a circular line or polygon. A circle in RethinkDB is a polygon or line approximating a circle of a given
+	 radius around a given center, consisting of a specified number of vertices (default 32).
+
+	The center may be specified either by two floating point numbers, the latitude (−90 to 90) and longitude (−180 to 180) 
+	of the point on a perfect sphere (see Geospatial support for more information on ReQL’s coordinate system), or by a 
+	point object. The radius is a floating point number whose units are meters by default, although that may be changed 
+	with the unit argument. */
+	public static func circle(longitude: ReQueryValue, latitude: ReQueryValue, radius: ReQueryValue, options: ReCircleArg...) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.CIRCLE.rawValue, [longitude.jsonSerialization, latitude.jsonSerialization, radius.jsonSerialization], R.optargs(options)])
+	}
+
+	public static func circle(point: ReQueryPoint, radius: ReQueryValue, options: ReCircleArg...) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.CIRCLE.rawValue, [point.jsonSerialization, radius.jsonSerialization], R.optargs(options)])
+	}
+
+	/** Compute the distance between a point and another geometry object. At least one of the geometry objects specified
+	must be a point. 
+	
+	If one of the objects is a polygon or a line, the point will be projected onto the line or polygon assuming a perfect 
+	sphere model before the distance is computed (using the model specified with geoSystem). As a consequence, if the 
+	polygon or line is extremely large compared to Earth’s radius and the distance is being computed with the default WGS84 
+	model, the results of distance should be considered approximate due to the deviation between the ellipsoid and spherical 
+	models. */
+	public func distance(from: ReQueryGeometry, to: ReQueryGeometry, options: ReDistanceArg...) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.DISTANCE.rawValue, [from.jsonSerialization, to.jsonSerialization], R.optargs(options)])
+	}
+
+	/** Convert a GeoJSON object to a ReQL geometry object.
+
+	RethinkDB only allows conversion of GeoJSON objects which have ReQL equivalents: Point, LineString, and Polygon. 
+	MultiPoint, MultiLineString, and MultiPolygon are not supported. (You could, however, store multiple points, lines and 
+	polygons in an array and use a geospatial multi index with them.)
+
+	Only longitude/latitude coordinates are supported. GeoJSON objects that use Cartesian coordinates, specify an altitude, 
+	or specify their own coordinate reference system will be rejected. */
+	public func geoJSON(json: ReQueryValue) -> ReQueryGeometry {
+		return ReQueryGeometry(jsonSerialization: [ReTerm.GEOJSON.rawValue, [json.jsonSerialization]])
+	}
+
+	/** Tests whether two geometry objects intersect with one another.  */
+	public func intersects(geometry: ReQueryGeometry, with: ReQueryGeometry) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.INTERSECTS.rawValue, [geometry.jsonSerialization, with.jsonSerialization]])
+	}
+
+	public func line(from: ReQueryPoint, to: ReQueryPoint) -> ReQueryLine {
+		return ReQueryLine(jsonSerialization: [ReTerm.LINE.rawValue, [from.jsonSerialization, to.jsonSerialization]])
+	}
 }
 
 public class ReQueryDatabase: ReQuery {
@@ -434,6 +482,10 @@ public class ReQueryTable: ReQuerySequence {
 
 	public func grant(userName: String, permissions: RePermission...) -> ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.GRANT.rawValue, [self.jsonSerialization, userName], R.optargs(permissions)])
+	}
+
+	public func getIntersecting(geometry: ReQueryGeometry, options: ReIntersectingArg...) -> ReQuerySelection {
+		return ReQuerySelection(jsonSerialization: [ReTerm.GET_INTERSECTING.rawValue, [self.jsonSerialization, geometry.jsonSerialization], R.optargs(options)])
 	}
 }
 
@@ -707,7 +759,50 @@ public class ReQueryLambda: ReQuery {
 	}
 }
 
-public class ReQueryPoint: ReDatum {
+public class ReQueryGeometry: ReDatum {
+	/** Compute the distance between a point and another geometry object. At least one of the geometry objects specified 
+	must be a point.
+
+	If one of the objects is a polygon or a line, the point will be projected onto the line or polygon assuming a perfect
+	sphere model before the distance is computed (using the model specified with geoSystem). As a consequence, if the
+	polygon or line is extremely large compared to Earth’s radius and the distance is being computed with the default WGS84
+	model, the results of distance should be considered approximate due to the deviation between the ellipsoid and spherical
+	models. */
+	public func distance(geometry: ReQueryGeometry, options: ReDistanceArg...) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.DISTANCE.rawValue, [self.jsonSerialization, geometry.jsonSerialization], R.optargs(options)])
+	}
+
+	/** Convert a ReQL geometry object to a GeoJSON object. */
+	public func toGeoJSON() -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.TO_GEOJSON.rawValue, [self.jsonSerialization]])
+	}
+
+	/** Tests whether two geometry objects intersect with one another.  */
+	public func intersects(geometry: ReQueryGeometry) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.INTERSECTS.rawValue, [self.jsonSerialization, geometry.jsonSerialization]])
+	}
+}
+
+public class ReQueryPolygon: ReQueryGeometry {
+
+}
+
+public class ReQueryLine: ReQueryGeometry {
+	/** Convert a Line object into a Polygon object. If the last point does not specify the same coordinates as the first 
+	point, polygon will close the polygon by connecting them.
+
+	Longitude (−180 to 180) and latitude (−90 to 90) of vertices are plotted on a perfect sphere. See Geospatial support 
+	for more information on ReQL’s coordinate system.
+
+	If the last point does not specify the same coordinates as the first point, polygon will close the polygon by 
+	connecting them. You cannot directly construct a polygon with holes in it using polygon, but you can use polygonSub to
+	use a second polygon within the interior of the first to define a hole. */
+	public func fill() -> ReQueryPolygon {
+		return ReQueryPolygon(jsonSerialization: [ReTerm.FILL.rawValue, [self.jsonSerialization]])
+	}
+}
+
+public class ReQueryPoint: ReQueryGeometry {
 	init(longitude: Double, latitude: Double) {
 		super.init(jsonSerialization: [ReTerm.POINT.rawValue, [longitude, latitude]])
 	}
