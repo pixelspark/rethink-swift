@@ -174,82 +174,6 @@ public class R {
 	}
 }
 
-public enum ReTableReadMode: String {
-	case Single = "single"
-	case Majority = "majority"
-	case Outdated = "outdated"
-}
-
-public enum ReTableIdentifierFormat: String {
-	case Name = "name"
-	case UUID = "uuid"
-}
-
-/** Optional arguments are instances of ReArg. */
-public protocol ReArg {
-	var serialization: (String, AnyObject) { get }
-}
-
-/** Optional arguments for the R.table command. */
-public enum ReTableArg: ReArg {
-	case ReadMode(ReTableReadMode)
-	case IdentifierFormat(ReTableIdentifierFormat)
-
-	public var serialization: (String, AnyObject) {
-		switch self {
-		case .ReadMode(let rm): return ("read_mode", rm.rawValue)
-		case .IdentifierFormat(let i): return ("identifier_format", i.rawValue)
-		}
-	}
-}
-
-public enum ReFilterArg: ReArg {
-	case Default(AnyObject)
-
-	public var serialization: (String, AnyObject) {
-		switch self {
-		case .Default(let a): return ("default", a)
-		}
-	}
-}
-
-public enum ReTableDurability: String {
-	case Soft = "soft"
-	case Hard = "hard"
-}
-
-public enum ReTableCreateArg: ReArg {
-	case PrimaryKey(String)
-	case Durability(ReTableDurability)
-	case Shards(Int)
-	case Replicas(Int)
-
-	public var serialization: (String, AnyObject) {
-		switch self {
-		case .PrimaryKey(let p): return ("primary_key", p)
-		case .Durability(let d): return ("durability", d.rawValue)
-		case .Shards(let s): return ("shards", s)
-		case .Replicas(let r): return ("replicas", r)
-		}
-	}
-}
-
-public enum RePermission: ReArg {
-	case Read(Bool)
-	case Write(Bool)
-	case Connect(Bool)
-	case Config(Bool)
-
-	public var serialization: (String, AnyObject) {
-		switch self {
-		case .Read(let b): return ("read", b)
-		case .Write(let b): return ("write", b)
-		case .Connect(let b): return ("connect", b)
-		case .Config(let b): return ("config", b)
-		}
-	}
-}
-
 public class ReQueryDatabase: ReQuery {
 	public let jsonSerialization: AnyObject
 
@@ -371,16 +295,16 @@ public class ReQuerySequence: ReQuery {
 	public func delete() -> ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.DELETE.rawValue, [self.jsonSerialization]])
 	}
+
+	public func changes(options: ReChangesArg...) -> ReQueryStream {
+		return ReQueryStream(jsonSerialization: [ReTerm.CHANGES.rawValue, [self.jsonSerialization], R.optargs(options)])
+	}
 }
 
 public class ReQuerySelection: ReQuerySequence {
 }
 
 public class ReQueryStream: ReQuerySequence {
-	public func changes() -> ReQueryStream {
-		return ReQueryStream(jsonSerialization: [ReTerm.CHANGES.rawValue, [self.jsonSerialization]])
-	}
-
 	public func zip() -> ReQueryStream {
 		return ReQueryStream(jsonSerialization: [ReTerm.ZIP.rawValue, [self.jsonSerialization]])
 	}

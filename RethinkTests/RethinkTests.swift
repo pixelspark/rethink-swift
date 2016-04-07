@@ -51,6 +51,7 @@ class RethinkTests: XCTestCase {
 				}
 
 				var outstanding = 100
+				var outstandingChanges = 1000
 				var reader : ReResponse.Callback? = nil
 				reader = { (response) -> () in
 					XCTAssert(!response.isError, "Failed to fetch documents: \(response)")
@@ -59,8 +60,8 @@ class RethinkTests: XCTestCase {
 						case .Rows(_, let cont):
 							if cont == nil {
 								outstanding -= 1
-								print("Outstanding=\(outstanding)")
-								if outstanding == 0 {
+								print("Outstanding=\(outstanding) outstanding changes=\(outstandingChanges)")
+								if outstanding == 0 && outstandingChanges == 0 {
 									R.dbDrop(databaseName).run(connection) { (response) in
 										XCTAssert(!response.isError, "Failed to drop database: \(response)")
 										testDoneCallback()
@@ -87,6 +88,26 @@ class RethinkTests: XCTestCase {
 
 						R.db(databaseName).table(tableName).indexWait().run(connection) { (response) in
 							XCTAssert(!response.isError, "Failed to wait for index: \(response)")
+
+							R.db(databaseName).table(tableName).changes().run(connection) { response in
+								XCTAssert(!response.isError, "Failed to obtain changes: \(response)")
+
+								var consumeChanges: ((response: ReResponse) -> ())? = nil
+
+								consumeChanges = { (response: ReResponse) -> () in
+									if case ReResponse.Rows(let docs, let cb) = response {
+										outstandingChanges -= docs.count
+										print("Received \(docs.count) changes, need \(outstandingChanges) more")
+										cb!(consumeChanges!)
+									}
+									else {
+										print("Received unexpected response for .changes request: \(response)")
+									}
+								}
+
+								consumeChanges!(response: response)
+
+							}
 
 							// Insert 1000 documents
 							var docs: [ReDocument] = []
