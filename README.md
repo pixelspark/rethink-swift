@@ -46,9 +46,9 @@ self.connection = R.connect(NSURL(string: "rethinkdb://localhost:28016")!, user:
 
 ### Status
 
-This is an early but functional and quite reliable version of the driver. It implements the V0_4 protocol (based on JSON). It currently supports
-the most basic commands (e.g. creation of tables, databases, ..). Not all of the extra option arguments are currently supported (but these
-can easily be added to the driver code).
+The driver implements the V1_0 protocol (which supports username/password authentication using SCRAM, and is available 
+from RethinkDB 2.3.0). Alternatively, you can also use V0_4. Some commands and optional arguments may still be missing,
+but are usually easy to add to the code.
 
 ### Installation
 
