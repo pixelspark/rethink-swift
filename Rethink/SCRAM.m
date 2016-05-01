@@ -291,7 +291,11 @@ static char encodingTable[64] = {
 
 - (BOOL) calculateProofs {
 	// Check to see that we have a password, salt and iteration count above 4096 (from RFC5802)
-	if(!self.salt.length /* || self.count.unsignedIntegerValue < 4096 */) {
+	if(!self.salt.length) {
+		return NO;
+	}
+
+	if(self.password.length > 0 && self.count.integerValue < 4096) {
 		return NO;
 	}
 
