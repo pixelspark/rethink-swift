@@ -354,7 +354,12 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 																}
 															}
 															else {
-																return callback(ReError.Fatal("Server returned \(s)"))
+																if let errorString = reply["error"] as? String {
+																	return callback(ReError.Fatal(errorString))
+																}
+																else {
+																	return callback(ReError.Fatal("Server returned \(s)"))
+																}
 															}
 														}
 														else {
@@ -376,7 +381,12 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 									}
 								}
 								else {
-									return callback(ReError.Fatal("Server returned \(s)"))
+									if let errorString = reply["error"] as? String {
+										return callback(ReError.Fatal(errorString))
+									}
+									else {
+										return callback(ReError.Fatal("Server returned \(s)"))
+									}
 								}
 							}
 							else {
