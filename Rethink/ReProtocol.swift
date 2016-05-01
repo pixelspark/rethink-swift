@@ -28,9 +28,10 @@ import Foundation
 internal class ReProtocol {
 	static let defaultPort = 28015
 
-	static let protocolVersion = 0x400c2d20 // V0_4
 	static let protocolType: UInt32 = 0x7e6970c7 // JSON
 	static let handshakeSuccessResponse = "SUCCESS"
+	static let defaultUser = "admin"
+	static let defaultPassword = ""
 
 	static let responseTypeSuccessAtom = 1
 	static let responseTypeSuccessSequence = 2

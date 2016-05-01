@@ -34,9 +34,9 @@ public class R {
 		return dict
 	}
 
-	public static func connect(url: NSURL, callback: (ReError?, ReConnection) -> ()) {
-		let c = ReConnection(url: url)
-		c.connect { err in
+	public static func connect(url: NSURL, user: String = ReProtocol.defaultUser, password: String = ReProtocol.defaultPassword, version: ReProtocolVersion = .V1_0, callback: (ReError?, ReConnection) -> ()) {
+		let c = ReConnection(url: url, protocolVersion: version)
+		c.connect(user, password: password) { err in
 			callback(err, c)
 		}
 	}

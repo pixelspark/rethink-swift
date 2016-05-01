@@ -162,8 +162,21 @@ private class ReSocket: GCDAsyncSocketDelegate {
 	}
 }
 
+public enum ReProtocolVersion {
+	case V0_4
+	case V1_0
+
+	var protocolVersionCode: UInt32 {
+		switch self {
+		case .V0_4: return 0x400c2d20
+		case .V1_0: return 0x34c2bdc3
+		}
+	}
+}
+
 public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 	public let url: NSURL
+	public let protocolVersion: ReProtocolVersion
 	public var authenticationKey: String? { get { return self.url.user } }
 
 	private var state = ReConnectionState.Unconnected
@@ -177,12 +190,13 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 	/** Create a connection to a RethinkDB instance. The URL should be of the form 'rethinkdb://host:port'. If
 	no port is given, the default port is used. If the server requires the use of an authentication key, put it
 	in the 'user' part of the URL, e.g. "rethinkdb://key@server:port". */
-	internal init(url: NSURL) {
+	internal init(url: NSURL, protocolVersion: ReProtocolVersion = .V1_0) {
 		self.url = url
+		self.protocolVersion = protocolVersion
 		self.socket = ReSocket(queue: self.queue)
 	}
 
-	internal func connect(callback: (ReError?) -> ()) {
+	internal func connect(username: String = ReProtocol.defaultUser, password: String = ReProtocol.defaultPassword, callback: (ReError?) -> ()) {
 		self.socket.connect(self.url) { err in
 			if let e = err {
 				return callback(ReError.Fatal(e))
@@ -195,20 +209,27 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 				return callback(e)
 			}
 
-			// Append protocol version
-			data.appendData(NSData.dataWithLittleEndianOf(UInt32(ReProtocol.protocolVersion)))
+			switch self.protocolVersion {
+			case .V0_4:
+				// Append protocol version
+				data.appendData(NSData.dataWithLittleEndianOf(UInt32(self.protocolVersion.protocolVersionCode)))
 
-			// Append authentication key length and the key itself (as ASCII)
-			if let authKey = self.authenticationKey?.dataUsingEncoding(NSASCIIStringEncoding) {
-				data.appendData(NSData.dataWithLittleEndianOf(UInt32(authKey.length)))
-				data.appendData(authKey)
-			}
-			else {
-				data.appendData(NSData.dataWithLittleEndianOf(UInt32(0)))
+				// Append authentication key length and the key itself (as ASCII)
+				if let authKey = self.authenticationKey?.dataUsingEncoding(NSASCIIStringEncoding) {
+					data.appendData(NSData.dataWithLittleEndianOf(UInt32(authKey.length)))
+					data.appendData(authKey)
+				}
+				else {
+					data.appendData(NSData.dataWithLittleEndianOf(UInt32(0)))
+				}
+
+				// Append protocol type (JSON)
+				data.appendData(NSData.dataWithLittleEndianOf(UInt32(ReProtocol.protocolType)))
+
+			case .V1_0:
+				data.appendData(NSData.dataWithLittleEndianOf(UInt32(self.protocolVersion.protocolVersionCode)))
 			}
 
-			// Append protocol type (JSON)
-			data.appendData(NSData.dataWithLittleEndianOf(UInt32(ReProtocol.protocolType)))
 			self.socket.write(data) { err in
 				if let e = err {
 					self.state = .Error(ReError.Fatal(e))
@@ -220,20 +241,160 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 				// Let's see if we get a reply
 				if self.socket.state == .Connected {
 					self.socket.readZeroTerminatedASCII() { s in
-						if s == ReProtocol.handshakeSuccessResponse {
-							// Start read loop
-							self.state = .Connected
-							self.startReading()
-							return callback(nil)
-						}
-						else {
-							let e = ReError.Fatal("Handshake failed, server returned: \(s)")
-							self.state = .Error(e)
-							return callback(e)
+						switch self.protocolVersion {
+						case .V0_4:
+							if s == ReProtocol.handshakeSuccessResponse {
+								// Start read loop
+								self.state = .Connected
+								self.startReading()
+								return callback(nil)
+							}
+							else {
+								let e = ReError.Fatal("Handshake failed, server returned: \(s)")
+								self.state = .Error(e)
+								return callback(e)
+							}
+
+						case .V1_0:
+							do {
+								if let replyString = s {
+									/* The reply is a JSON object containing the keys 'success' (should be true), 'min_protocol_version',
+									'max_protocol_version' and 'server_version'. */
+									let reply = try NSJSONSerialization.JSONObjectWithData(replyString.dataUsingEncoding(NSASCIIStringEncoding)!, options: [])
+
+									if let replyDictionary = reply as? [String: AnyObject], let success = replyDictionary["success"] as? NSNumber where success.boolValue {
+										self.performSCRAMAuthentication(username, password: password) { err in
+											if err == nil {
+												// Start read loop
+												self.state = .Connected
+												self.startReading()
+												return callback(nil)
+											}
+											else {
+												self.state = .Error(err!)
+												return callback(err)
+											}
+										}
+									}
+									else {
+										/* On error, the server will return a null-terminated error string (non JSON), 
+										or a JSON object with 'success' set to false. */
+										let e = ReError.Fatal("Server returned \(replyString)")
+										self.state = .Error(e)
+										return callback(e)
+									}
+								}
+								else {
+									let e = ReError.Fatal("Handshake failed, server returned: \(s)")
+									self.state = .Error(e)
+									return callback(e)
+								}
+							}
+							catch let error as NSError {
+								return callback(ReError.Fatal(error.localizedDescription))
+							}
 						}
 					}
 				}
 			}
+		}
+	}
+
+	private func performSCRAMAuthentication(username: String, password: String, callback: (ReError?) -> ()) {
+		assert(self.protocolVersion == .V1_0, "SCRAM authentication not supported with protocol version \(self.protocolVersion)")
+		let scram = SCRAM(username: username, password: password)
+		var zeroByte: UInt8 = 0x00
+
+		// Send authentication first message
+		do {
+			let firstMessage = ["protocol_version": 0, "authentication_method": "SCRAM-SHA-256", "authentication": scram.clientFirstMessage]
+			let data = try NSJSONSerialization.dataWithJSONObject(firstMessage, options: [])
+			let zeroTerminatedData = NSMutableData(data: data)
+			zeroTerminatedData.appendBytes(&zeroByte, length: 1)
+
+			self.socket.write(zeroTerminatedData) { err in
+				if let e = err {
+					return callback(ReError.Fatal(e))
+				}
+
+				// Server should send us some JSON back
+				self.socket.readZeroTerminatedASCII() { replyString in
+					do {
+						if let s = replyString {
+							if let reply = try NSJSONSerialization.JSONObjectWithData(s.dataUsingEncoding(NSASCIIStringEncoding)!, options: []) as? [String: AnyObject] {
+								if let success = reply["success"] as? NSNumber where success.boolValue {
+									let authData = reply["authentication"] as! String
+									if let shouldSend = scram.receive(authData) {
+										// Send the generated reply back
+										let secondMessage = [
+											"authentication": shouldSend
+										]
+										let secondReply = try NSJSONSerialization.dataWithJSONObject(secondMessage, options: [])
+										let zeroSecondReply = NSMutableData(data: secondReply)
+										zeroSecondReply.appendBytes(&zeroByte, length: 1)
+
+										self.socket.write(zeroSecondReply) { err in
+											if let e = err {
+												return callback(ReError.Fatal(e))
+											}
+
+											// Verify server signature
+											self.socket.readZeroTerminatedASCII() { replyString in
+												do {
+													if let s = replyString {
+														if let reply = try NSJSONSerialization.JSONObjectWithData(s.dataUsingEncoding(NSASCIIStringEncoding)!, options: []) as? [String: AnyObject] {
+															if let success = reply["success"] as? NSNumber where success.boolValue {
+																let authData = reply["authentication"] as! String
+																scram.receive(authData)
+																if scram.authenticated {
+																	return callback(nil)
+																}
+																else {
+																	return callback(ReError.Fatal("SCRAM authentication invalid!"))
+																}
+															}
+															else {
+																return callback(ReError.Fatal("Server returned \(s)"))
+															}
+														}
+														else {
+															return callback(ReError.Fatal("Server returned \(s)"))
+														}
+													}
+													else {
+														return callback(ReError.Fatal("Server did not return a server final message in SCRAM exchange"))
+													}
+												}
+												catch let error as NSError {
+													return callback(ReError.Fatal(error.localizedDescription))
+												}
+											}
+										}
+									}
+									else {
+										return callback(ReError.Fatal("SCRAM authentication failed"))
+									}
+								}
+								else {
+									return callback(ReError.Fatal("Server returned \(s)"))
+								}
+							}
+							else {
+								return callback(ReError.Fatal("Server returned \(s)"))
+							}
+						}
+						else {
+							return callback(ReError.Fatal("Server did not return a reply to our first authentication message"))
+						}
+					}
+					catch let error as NSError {
+						return callback(ReError.Fatal(error.localizedDescription))
+					}
+				}
+			}
+		}
+		catch let error as NSError {
+			return callback(ReError.Fatal(error.localizedDescription))
 		}
 	}
 

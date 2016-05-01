@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		655E10F61CB64E63008E3057 /* ReArguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655E10F51CB64E63008E3057 /* ReArguments.swift */; };
+		65368F881CC6CDE700302942 /* SCRAM.h in Headers */ = {isa = PBXBuildFile; fileRef = 65368F871CC6CDE700302942 /* SCRAM.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		65368F8A1CC6CE1600302942 /* SCRAM.m in Sources */ = {isa = PBXBuildFile; fileRef = 65368F891CC6CE1600302942 /* SCRAM.m */; };
 		65A115131BD0D3C9007BC661 /* ReConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A115121BD0D3C9007BC661 /* ReConnection.swift */; };
 		65A115161BD0D4B8007BC661 /* ReProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A115151BD0D4B8007BC661 /* ReProtocol.swift */; };
 		65A115251BD2B364007BC661 /* ReDatum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A115241BD2B364007BC661 /* ReDatum.swift */; };
@@ -31,6 +33,8 @@
 
 /* Begin PBXFileReference section */
 		655E10F51CB64E63008E3057 /* ReArguments.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReArguments.swift; sourceTree = "<group>"; };
+		65368F871CC6CDE700302942 /* SCRAM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCRAM.h; sourceTree = "<group>"; };
+		65368F891CC6CE1600302942 /* SCRAM.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCRAM.m; sourceTree = "<group>"; };
 		65A115121BD0D3C9007BC661 /* ReConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReConnection.swift; sourceTree = "<group>"; };
 		65A115151BD0D4B8007BC661 /* ReProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReProtocol.swift; sourceTree = "<group>"; };
 		65A115241BD2B364007BC661 /* ReDatum.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReDatum.swift; sourceTree = "<group>"; };
@@ -96,6 +100,8 @@
 				65A115151BD0D4B8007BC661 /* ReProtocol.swift */,
 				65A115241BD2B364007BC661 /* ReDatum.swift */,
 				655E10F51CB64E63008E3057 /* ReArguments.swift */,
+				65368F871CC6CDE700302942 /* SCRAM.h */,
+				65368F891CC6CE1600302942 /* SCRAM.m */,
 			);
 			path = Rethink;
 			sourceTree = "<group>";
@@ -117,6 +123,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				65F739D51BC9502400B5E62D /* Rethink.h in Headers */,
+				65368F881CC6CDE700302942 /* SCRAM.h in Headers */,
 				65B3CC451CA1C39C003FC6DF /* GCDAsyncSocket.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -220,6 +227,7 @@
 			files = (
 				65A115131BD0D3C9007BC661 /* ReConnection.swift in Sources */,
 				65F739EC1BC9505B00B5E62D /* Rethink.swift in Sources */,
+				65368F8A1CC6CE1600302942 /* SCRAM.m in Sources */,
 				65A115251BD2B364007BC661 /* ReDatum.swift in Sources */,
 				655E10F61CB64E63008E3057 /* ReArguments.swift in Sources */,
 				65B3CC461CA1C39C003FC6DF /* GCDAsyncSocket.m in Sources */,

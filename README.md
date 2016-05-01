@@ -8,7 +8,7 @@ Looking for a Mac app to easily query RethinkDB? Convert and analyze large data 
 ### Usage
 
 ```swift
-self.connection = R.connect(NSURL(string: "rethinkdb://localhost:28016")!) { err in
+self.connection = R.connect(NSURL(string: "rethinkdb://localhost:28016")!, user: "admin", password: "") { err in
 	assert(err == nil, "Connection error: \(err)")
 
 	// Connected!

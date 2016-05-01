@@ -17,6 +17,19 @@ class RethinkTests: XCTestCase {
 		}
 	}
 
+	func testSCRAM() {
+		let s = SCRAM(username: "user", password: "pencil", nonce: "rOprNGfwEbeRWgbNEkqO")
+		XCTAssert(!s.authenticated)
+		XCTAssert(s.clientFirstMessage == "n,,n=user,r=rOprNGfwEbeRWgbNEkqO")
+
+		let c2 = s.receive("r=rOprNGfwEbeRWgbNEkqO%hvYDpWUa2RaTCAfuxFIlj)hNlF$k0,s=W22ZaJ0SNY7soEsUEjb6gQ==,i=4096")
+		XCTAssert(!s.authenticated)
+		XCTAssert(c2! == "c=biws,r=rOprNGfwEbeRWgbNEkqO%hvYDpWUa2RaTCAfuxFIlj)hNlF$k0,p=dHzbZapWIk4jUhN+Ute9ytag9zjfMHgsqmmiz7AndVQ=")
+		XCTAssert(!s.authenticated)
+		XCTAssert(s.receive("v=6rriTRBi23WpRR/wtup+mMhUZUn/dB5nLTJRsjl95G4=") == nil)
+		XCTAssert(s.authenticated)
+	}
+
     func testBasicCommands() {
 		asyncTest { testDoneCallback in
 			R.connect(NSURL(string: "rethinkdb://localhost:28015")!) { (err, connection) in
