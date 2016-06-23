@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		655E10F61CB64E63008E3057 /* ReArguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655E10F51CB64E63008E3057 /* ReArguments.swift */; };
 		65368F881CC6CDE700302942 /* SCRAM.h in Headers */ = {isa = PBXBuildFile; fileRef = 65368F871CC6CDE700302942 /* SCRAM.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		65368F8A1CC6CE1600302942 /* SCRAM.m in Sources */ = {isa = PBXBuildFile; fileRef = 65368F891CC6CE1600302942 /* SCRAM.m */; };
+		655E10F61CB64E63008E3057 /* ReArguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655E10F51CB64E63008E3057 /* ReArguments.swift */; };
 		65A115131BD0D3C9007BC661 /* ReConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A115121BD0D3C9007BC661 /* ReConnection.swift */; };
 		65A115161BD0D4B8007BC661 /* ReProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A115151BD0D4B8007BC661 /* ReProtocol.swift */; };
 		65A115251BD2B364007BC661 /* ReDatum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A115241BD2B364007BC661 /* ReDatum.swift */; };
@@ -32,9 +32,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		655E10F51CB64E63008E3057 /* ReArguments.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReArguments.swift; sourceTree = "<group>"; };
 		65368F871CC6CDE700302942 /* SCRAM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCRAM.h; sourceTree = "<group>"; };
 		65368F891CC6CE1600302942 /* SCRAM.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCRAM.m; sourceTree = "<group>"; };
+		655E10F51CB64E63008E3057 /* ReArguments.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReArguments.swift; sourceTree = "<group>"; };
 		65A115121BD0D3C9007BC661 /* ReConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReConnection.swift; sourceTree = "<group>"; };
 		65A115151BD0D4B8007BC661 /* ReProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReProtocol.swift; sourceTree = "<group>"; };
 		65A115241BD2B364007BC661 /* ReDatum.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReDatum.swift; sourceTree = "<group>"; };
@@ -179,9 +179,11 @@
 				TargetAttributes = {
 					65F739D01BC9502400B5E62D = {
 						CreatedOnToolsVersion = 7.0.1;
+						LastSwiftMigration = 0800;
 					};
 					65F739DA1BC9502400B5E62D = {
 						CreatedOnToolsVersion = 7.0.1;
+						LastSwiftMigration = 0800;
 					};
 				};
 			};
@@ -358,6 +360,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -378,6 +381,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = nl.pixelspark.Rethink;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
@@ -390,6 +394,7 @@
 				OTHER_SWIFT_FLAGS = "-DDEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = nl.pixelspark.RethinkTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -402,6 +407,7 @@
 				OTHER_SWIFT_FLAGS = "-DDEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = nl.pixelspark.RethinkTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};

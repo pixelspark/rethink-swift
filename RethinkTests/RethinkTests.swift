@@ -2,14 +2,14 @@ import XCTest
 import Rethink
 
 class RethinkTests: XCTestCase {
-	private func asyncTest(block: (callback: () -> ()) -> ()) {
-		let expectFinish = self.expectationWithDescription("CSV tests")
+	private func asyncTest(_ block: (callback: () -> ()) -> ()) {
+		let expectFinish = self.expectation(withDescription: "CSV tests")
 
 		block {
 			expectFinish.fulfill()
 		}
 
-		self.waitForExpectationsWithTimeout(5.0) { (err) -> Void in
+		self.waitForExpectations(withTimeout: 5.0) { (err) -> Void in
 			if let e = err {
 				// Note: referencing self here deliberately to prevent test from being destroyed prematurely
 				print("Error=\(e) \(self)")
@@ -32,7 +32,7 @@ class RethinkTests: XCTestCase {
 
     func testBasicCommands() {
 		asyncTest { testDoneCallback in
-			R.connect(NSURL(string: "rethinkdb://localhost:28015")!) { (err, connection) in
+			R.connect(URL(string: "rethinkdb://localhost:28015")!) { (err, connection) in
 				XCTAssert(err == nil, "Connection error: \(err)")
 
 				print("Connected!")
@@ -43,7 +43,7 @@ class RethinkTests: XCTestCase {
 					XCTAssert(!response.isError, "Failed to UUID: \(response)")
 				}
 
-				let date = NSDate()
+				let date = Date()
 				R.expr(date).run(connection) { (response) in
 					XCTAssert(!response.isError && response.value is NSDate, "Failed to date: \(response)")
 					print(response)
@@ -70,7 +70,7 @@ class RethinkTests: XCTestCase {
 					XCTAssert(!response.isError, "Failed to fetch documents: \(response)")
 
 					switch response {
-						case .Rows(_, let cont):
+						case .rows(_, let cont):
 							if cont == nil {
 								outstanding -= 1
 								print("Outstanding=\(outstanding) outstanding changes=\(outstandingChanges)")
@@ -93,7 +93,7 @@ class RethinkTests: XCTestCase {
 
 					R.dbList().run(connection) { (response) in
 						XCTAssert(!response.isError, "Failed to dbList: \(response)")
-						XCTAssert(response.value is NSArray && (response.value as! NSArray).containsObject(databaseName), "Created database not listed in response")
+						XCTAssert(response.value is NSArray && (response.value as! NSArray).contains(databaseName), "Created database not listed in response")
 					}
 
 					R.db(databaseName).tableCreate(tableName).run(connection) { (response) in
@@ -108,7 +108,7 @@ class RethinkTests: XCTestCase {
 								var consumeChanges: ((response: ReResponse) -> ())? = nil
 
 								consumeChanges = { (response: ReResponse) -> () in
-									if case ReResponse.Rows(let docs, let cb) = response {
+									if case ReResponse.rows(let docs, let cb) = response {
 										outstandingChanges -= docs.count
 										print("Received \(docs.count) changes, need \(outstandingChanges) more")
 										cb!(consumeChanges!)
@@ -133,7 +133,7 @@ class RethinkTests: XCTestCase {
 
 								R.db(databaseName).table(tableName).filter({ r in return r["foo"].eq(R.expr("bar")) }).count().run(connection) { (response) in
 									XCTAssert(!response.isError, "Failed to count: \(response)")
-									XCTAssert(response.value is NSNumber && (response.value as! NSNumber).integerValue == 1000, "Not all documents were inserted, or count is failing: \(response)")
+									XCTAssert(response.value is NSNumber && (response.value as! NSNumber).intValue == 1000, "Not all documents were inserted, or count is failing: \(response)")
 
 									for _ in 0..<outstanding {
 										R.db(databaseName).table(tableName).run(connection, callback: reader!)

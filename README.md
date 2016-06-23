@@ -8,7 +8,7 @@ Looking for a Mac app to easily query RethinkDB? Convert and analyze large data 
 ### Usage
 
 ```swift
-self.connection = R.connect(NSURL(string: "rethinkdb://localhost:28016")!, user: "admin", password: "") { err in
+self.connection = R.connect(URL(string: "rethinkdb://localhost:28016")!, user: "admin", password: "") { err in
 	assert(err == nil, "Connection error: \(err)")
 
 	// Connected!
@@ -49,6 +49,8 @@ self.connection = R.connect(NSURL(string: "rethinkdb://localhost:28016")!, user:
 The driver implements the V1_0 protocol (which supports username/password authentication using SCRAM, and is available 
 from RethinkDB 2.3.0). Alternatively, you can also use V0_4. Some commands and optional arguments may still be missing,
 but are usually easy to add to the code.
+
+The driver is written for Swift 3. The last version working in Swift 2.2 can be found at the tag 'last-swift2'.
 
 ### Installation
 
