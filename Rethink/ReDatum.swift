@@ -73,7 +73,7 @@ public class ReDatum: ReQueryValue {
 	}
 
 	internal init(data: Data) {
-		self.jsonSerialization = [ReDatum.reqlSpecialKey: ReDatum.reqlTypeBinary, "data": data.base64EncodedString([])]
+		self.jsonSerialization = [ReDatum.reqlSpecialKey: ReDatum.reqlTypeBinary, "data": data.base64EncodedString(options: [])]
 	}
 
 	internal init(jsonSerialization: AnyObject) {
