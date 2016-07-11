@@ -8,17 +8,17 @@ Looking for a Mac app to easily query RethinkDB? Convert and analyze large data 
 ### Usage
 
 ```swift
-self.connection = R.connect(URL(string: "rethinkdb://localhost:28016")!, user: "admin", password: "") { err in
+R.connect(URL(string: "rethinkdb://localhost:28016")!, user: "admin", password: "") { err, connection in
 	assert(err == nil, "Connection error: \(err)")
 
 	// Connected!
 	R.dbCreate(databaseName).run(connection) { response in
 		assert(!response.isError, "Failed to create database: \(response)")
 
-		R.db(databaseName).tableCreate(tableName).run(self.connection) { response in
+		R.db(databaseName).tableCreate(tableName).run(connection) { response in
 			assert(!response.isError, "Failed to create table: \(response)")
 
-			R.db(databaseName).table(tableName).indexWait().run(self.connection) { response in
+			R.db(databaseName).table(tableName).indexWait().run(connection) { response in
 				assert(!response.isError, "Failed to wait for index: \(response)")
 
 				// Insert 1000 documents
@@ -27,14 +27,14 @@ self.connection = R.connect(URL(string: "rethinkdb://localhost:28016")!, user: "
 					docs.append(["foo": "bar", "id": i])
 				}
 
-				R.db(databaseName).table(tableName).insert(docs).run(self.connection) { response in
+				R.db(databaseName).table(tableName).insert(docs).run(connection) { response in
 					assert(!response.isError, "Failed to insert data: \(response)")
 
-					R.db(databaseName).table(tableName).filter({ r in return r["foo"].eq(R.expr("bar")) }).run(self.connection) { response in 
+					R.db(databaseName).table(tableName).filter({ r in return r["foo"].eq(R.expr("bar")) }).run(connection) { response in 
 						...
 					}
 
-					R.db(databaseName).table(tableName).count().run(self.connection) { response in
+					R.db(databaseName).table(tableName).count().run(connection) { response in
 						...
 					}
 				}
