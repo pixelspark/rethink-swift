@@ -46,7 +46,7 @@ private enum ReSocketState {
 	case connected
 }
 
-private class ReSocket: GCDAsyncSocketDelegate {
+private class ReSocket: NSObject, GCDAsyncSocketDelegate {
 	typealias WriteCallback = (String?) -> ()
 	typealias ReadCallback = (Data?) -> ()
 
@@ -59,10 +59,11 @@ private class ReSocket: GCDAsyncSocketDelegate {
 
 	init(queue: DispatchQueue) {
 		self.socket = GCDAsyncSocket(delegate: nil, delegateQueue: queue)
+		super.init()
 		self.socket.delegate = self
 	}
 
-	func connect(_ url: URL, callback: (String?) -> ()) {
+	func connect(_ url: URL, withTimeout timeout: TimeInterval = 5.0, callback: (String?) -> ()) {
 		assert(self.state == .unconnected, "Already connected or connecting")
 		self.onConnect = callback
 		self.state = .connecting
@@ -71,19 +72,19 @@ private class ReSocket: GCDAsyncSocketDelegate {
 		let port = (url as NSURL).port ?? 28015
 
 		do {
-			try socket.connect(toHost: host, onPort: port.uint16Value)
+			try socket.connect(toHost: host, onPort: port.uint16Value, withTimeout: timeout)
 		}
 		catch let e as NSError {
 			return callback(e.localizedDescription)
 		}
 	}
 
-	@objc private func socket(_ sock: GCDAsyncSocket!, didConnectToHost host: String!, port: UInt16) {
+	@objc private func socket(_ sock: GCDAsyncSocket, didConnectToHost host: String, port: UInt16) {
 		self.state = .connected
 		self.onConnect?(nil)
 	}
 
-	@objc private func socketDidDisconnect(_ sock: GCDAsyncSocket!, withError err: NSError!) {
+	@objc private func socketDidDisconnect(_ sock: GCDAsyncSocket, withError err: NSError?) {
 		self.state = .unconnected
 	}
 
@@ -94,7 +95,7 @@ private class ReSocket: GCDAsyncSocketDelegate {
 			return callback(nil)
 		}
 
-		socket.delegateQueue.async {
+		socket.delegateQueue!.async {
 			let tag = (self.readCallbacks.count + 1)
 			self.readCallbacks[tag] = callback
 			self.socket.readData(toLength: UInt(length), withTimeout: -1.0, tag: tag)
@@ -107,7 +108,7 @@ private class ReSocket: GCDAsyncSocketDelegate {
 		}
 
 		let zero = Data(bytes: UnsafePointer<UInt8>([UInt8(0)]), count: 1)
-		socket.delegateQueue.async {
+		socket.delegateQueue!.async {
 			let tag = (self.readCallbacks.count + 1)
 			self.readCallbacks[tag] = { data in
 				if let d = data {
@@ -131,15 +132,15 @@ private class ReSocket: GCDAsyncSocketDelegate {
 			return callback("socket is not connected!")
 		}
 
-		socket.delegateQueue.async {
+		socket.delegateQueue!.async {
 			let tag = (self.writeCallbacks.count + 1)
 			self.writeCallbacks[tag] = callback
 			self.socket.write(data, withTimeout: -1.0, tag: tag)
 		}
 	}
 
-	@objc private func socket(_ sock: GCDAsyncSocket!, didWriteDataWithTag tag: Int) {
-		socket.delegateQueue.async {
+	@objc private func socket(_ sock: GCDAsyncSocket, didWriteDataWithTag tag: Int) {
+		socket.delegateQueue!.async {
 			if let cb = self.writeCallbacks[tag] {
 				cb(nil)
 				self.writeCallbacks.removeValue(forKey: tag)
@@ -147,8 +148,8 @@ private class ReSocket: GCDAsyncSocketDelegate {
 		}
 	}
 
-	@objc private func socket(_ sock: GCDAsyncSocket!, didRead data: Data!, withTag tag: Int) {
-		socket.delegateQueue.async {
+	@objc private func socket(_ sock: GCDAsyncSocket, didRead data: Data, withTag tag: Int) {
+		socket.delegateQueue!.async {
 			if let cb = self.readCallbacks[tag] {
 				cb(data)
 				self.readCallbacks.removeValue(forKey: tag)
