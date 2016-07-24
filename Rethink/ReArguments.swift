@@ -143,7 +143,7 @@ public enum ReChangesArg: ReArg {
 		switch self {
 		case .squash(let b, let i):
 			assert(!(i != nil && !b), "Do not specify a time interval when squashing is to be disabled")
-			if let interval = i where b {
+			if let interval = i, b {
 				 return ("squash", interval)
 			}
 			else {
