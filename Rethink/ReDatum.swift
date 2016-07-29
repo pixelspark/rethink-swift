@@ -53,7 +53,7 @@ public class ReDatum: ReQueryValue {
 	}
 
 	internal init(array: [ReQueryValue]) {
-		self.jsonSerialization = [ReTerm.make_ARRAY.rawValue, array.map { return $0.jsonSerialization }]
+		self.jsonSerialization = [ReTerm.make_array.rawValue, array.map { return $0.jsonSerialization }]
 	}
 
 	internal init(document: ReDocument) {
