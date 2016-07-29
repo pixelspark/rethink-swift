@@ -228,6 +228,14 @@ public class R {
 	public func line(from: ReQueryPoint, to: ReQueryPoint) -> ReQueryLine {
 		return ReQueryLine(jsonSerialization: [ReTerm.LINE.rawValue, [from.jsonSerialization, to.jsonSerialization]])
 	}
+    
+    public static func asc(key: String) -> ReQueryValue {
+        return ReDatum(jsonSerialization: [ReTerm.ASC.rawValue, [key.jsonSerialization]])
+    }
+
+    public static func desc(key: String) -> ReQueryValue {
+        return ReDatum(jsonSerialization: [ReTerm.DESC.rawValue, [key.jsonSerialization]])
+    }
 }
 
 public class ReQueryDatabase: ReQuery {
@@ -364,6 +372,31 @@ public class ReQuerySequence: ReQuery {
 	public func fold(base: ReQueryValue, accumulator: ReQueryLambda, options: ReFoldArg...) -> ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.FOLD.rawValue, [self.jsonSerialization, base.jsonSerialization, accumulator.jsonSerialization], R.optargs(options)])
 	}
+    
+    public func withoutFields(fields: [ReQueryValue]) -> ReQuerySequence {
+        let values = fields.map({ e in return e.jsonSerialization })
+        return ReQuerySequence(jsonSerialization: [ReTerm.WITHOUT.rawValue, [self.jsonSerialization, [ReTerm.MAKE_ARRAY.rawValue, values]]])
+    }
+    
+    public func orderBy(sortKey sortKey: ReQueryValue) -> ReQuerySequence {
+        var querySequence: [AnyObject] = [
+            ReTerm.ORDER_BY.rawValue,
+            [self.jsonSerialization, sortKey.jsonSerialization],
+        ]
+        
+        return ReQuerySequence(
+            jsonSerialization: querySequence
+        )
+    }
+
+    public func hasFields(field: ReQueryValue) -> ReQuerySequence {
+        return self.hasFields([field])
+    }
+
+    public func hasFields(fields: [ReQueryValue]) -> ReQuerySequence {
+        let values = fields.map({ e in return e.jsonSerialization})
+        return ReQuerySequence(jsonSerialization: [ReTerm.HAS_FIELDS.rawValue, [self.jsonSerialization, [ReTerm.MAKE_ARRAY.rawValue, values]]])
+    }
 }
 
 public class ReQuerySelection: ReQuerySequence {
@@ -468,7 +501,7 @@ public class ReQueryTable: ReQuerySequence {
 		return ReQuerySequence(jsonSerialization: [ReTerm.GET_ALL.rawValue, [self.jsonSerialization, key.jsonSerialization], ["index": index]])
 	}
 
-	public func rebalance() -> ReQueryValue {
+    public func rebalance() -> ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.REBALANCE.rawValue, [self.jsonSerialization]])
 	}
 
@@ -487,6 +520,28 @@ public class ReQueryTable: ReQuerySequence {
 	public func getIntersecting(geometry: ReQueryGeometry, options: ReIntersectingArg...) -> ReQuerySelection {
 		return ReQuerySelection(jsonSerialization: [ReTerm.GET_INTERSECTING.rawValue, [self.jsonSerialization, geometry.jsonSerialization], R.optargs(options)])
 	}
+    
+    public func getAll(key: [ReQueryValue], index: String) -> ReQuerySequence {
+        return ReQuerySequence(
+            jsonSerialization: [ReTerm.GET_ALL.rawValue,
+                [self.jsonSerialization] + key.map({$0.jsonSerialization}),
+                ["index": index]
+            ]
+        )
+    }
+    
+    public func orderBy(index index: ReQueryValue) -> ReQuerySequence {
+        var querySequence: [AnyObject] = [
+            ReTerm.ORDER_BY.rawValue,
+            [self.jsonSerialization]
+        ]
+        
+        querySequence.append(["index": index.jsonSerialization])
+        
+        return ReQuerySequence(
+            jsonSerialization: querySequence
+        )
+    }
 }
 
 public protocol ReQuery {
