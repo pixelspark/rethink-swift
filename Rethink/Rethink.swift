@@ -378,8 +378,8 @@ public class ReQuerySequence: ReQuery {
         return ReQuerySequence(jsonSerialization: [ReTerm.WITHOUT.rawValue, [self.jsonSerialization, [ReTerm.MAKE_ARRAY.rawValue, values]]])
     }
     
-    public func orderBy(sortKey sortKey: ReQueryValue) -> ReQuerySequence {
-        var querySequence: [AnyObject] = [
+    public func orderBy(sortKey: ReQueryValue) -> ReQuerySequence {
+        let querySequence: [AnyObject] = [
             ReTerm.ORDER_BY.rawValue,
             [self.jsonSerialization, sortKey.jsonSerialization],
         ]
@@ -530,7 +530,7 @@ public class ReQueryTable: ReQuerySequence {
         )
     }
     
-    public func orderBy(index index: ReQueryValue) -> ReQuerySequence {
+    public override func orderBy(index: ReQueryValue) -> ReQuerySequence {
         var querySequence: [AnyObject] = [
             ReTerm.ORDER_BY.rawValue,
             [self.jsonSerialization]
