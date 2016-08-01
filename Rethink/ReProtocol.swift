@@ -24,6 +24,18 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE. **/
 import Foundation
 
+public enum ReProtocolVersion {
+	case v0_4
+	case v1_0
+
+	var protocolVersionCode: UInt32 {
+		switch self {
+		case .v0_4: return 0x400c2d20
+		case .v1_0: return 0x34c2bdc3
+		}
+	}
+}
+
 /** Protocol constants. */
 internal class ReProtocol {
 	static let defaultPort = 28015
@@ -229,5 +241,19 @@ internal enum ReTerm: Int {
 	case maxval = 181
 	case fold = 187
 	case grant = 188
+}
 
+internal typealias ReQueryToken = UInt64
+
+internal class ReTokenCounter {
+	private var nextQueryToken: UInt64 = 0x5ADFACE
+	private let mutex = Mutex()
+
+	func next() -> ReQueryToken {
+		return self.mutex.locked {
+			let nt = self.nextQueryToken
+			self.nextQueryToken += 1
+			return nt
+		}
+	}
 }

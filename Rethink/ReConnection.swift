@@ -1,5 +1,5 @@
 /**  Rethink.swift
-Copyright (c) 2015 Pixelspark
+Copyright (c) 2016 Pixelspark
 Author: Tommy van der Vorst (tommy@pixelspark.nl)
 
 Permission is hereby granted, free of charge, to any person
@@ -24,161 +24,6 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE. **/
 import Foundation
 
-private typealias ReQueryToken = UInt64
-
-private struct ReTokenCounter {
-	private var nextQueryToken: UInt64 = 0x5ADFACE
-	private var queue = DispatchQueue(label: "nl.pixelspark.Rethink.ReTokenCounter", attributes: DispatchQueueAttributes.serial)
-
-	mutating func next() -> ReQueryToken {
-		var nt: UInt64 = 0
-		self.queue.sync {
-			nt = self.nextQueryToken
-			self.nextQueryToken += 1
-		}
-		return nt
-	}
-}
-
-private enum ReSocketState {
-	case unconnected
-	case connecting
-	case connected
-}
-
-private class ReSocket: NSObject, GCDAsyncSocketDelegate {
-	typealias WriteCallback = (String?) -> ()
-	typealias ReadCallback = (Data?) -> ()
-
-	let socket: GCDAsyncSocket
-	private var state: ReSocketState = .unconnected
-
-	private var onConnect: ((String?) -> ())?
-	private var writeCallbacks: [Int: WriteCallback] = [:]
-	private var readCallbacks: [Int: ReadCallback] = [:]
-
-	init(queue: DispatchQueue) {
-		self.socket = GCDAsyncSocket(delegate: nil, delegateQueue: queue)
-		super.init()
-		self.socket.delegate = self
-	}
-
-	func connect(_ url: URL, withTimeout timeout: TimeInterval = 5.0, callback: (String?) -> ()) {
-		assert(self.state == .unconnected, "Already connected or connecting")
-		self.onConnect = callback
-		self.state = .connecting
-
-		guard let host = url.host else { return callback("Invalid URL") }
-		let port = (url as NSURL).port ?? 28015
-
-		do {
-			try socket.connect(toHost: host, onPort: port.uint16Value, withTimeout: timeout)
-		}
-		catch let e as NSError {
-			return callback(e.localizedDescription)
-		}
-	}
-
-	@objc private func socket(_ sock: GCDAsyncSocket, didConnectToHost host: String, port: UInt16) {
-		self.state = .connected
-		self.onConnect?(nil)
-	}
-
-	@objc private func socketDidDisconnect(_ sock: GCDAsyncSocket, withError err: NSError?) {
-		self.state = .unconnected
-	}
-
-	func read(_ length: Int, callback: ReadCallback)  {
-		assert(length > 0, "Length cannot be zero or less")
-
-		if self.state != .connected {
-			return callback(nil)
-		}
-
-		socket.delegateQueue!.async {
-			let tag = (self.readCallbacks.count + 1)
-			self.readCallbacks[tag] = callback
-			self.socket.readData(toLength: UInt(length), withTimeout: -1.0, tag: tag)
-		}
-	}
-
-	func readZeroTerminatedASCII(_ callback: (String?) -> ()) {
-		if self.state != .connected {
-			return callback(nil)
-		}
-
-		let zero = Data(bytes: UnsafePointer<UInt8>([UInt8(0)]), count: 1)
-		socket.delegateQueue!.async {
-			let tag = (self.readCallbacks.count + 1)
-			self.readCallbacks[tag] = { data in
-				if let d = data {
-					if let s = NSString(data: d.subdata(in: 0..<(d.count-1)), encoding: String.Encoding.ascii.rawValue) {
-						callback(String(s))
-					}
-					else {
-						callback(nil)
-					}
-				}
-				else {
-					callback(nil)
-				}
-			}
-			self.socket.readData(to: zero, withTimeout: -1.0, tag: tag)
-		}
-	}
-
-	func write(_ data: Data, callback: WriteCallback) {
-		if self.state != .connected {
-			return callback("socket is not connected!")
-		}
-
-		socket.delegateQueue!.async {
-			let tag = (self.writeCallbacks.count + 1)
-			self.writeCallbacks[tag] = callback
-			self.socket.write(data, withTimeout: -1.0, tag: tag)
-		}
-	}
-
-	@objc private func socket(_ sock: GCDAsyncSocket, didWriteDataWithTag tag: Int) {
-		socket.delegateQueue!.async {
-			if let cb = self.writeCallbacks[tag] {
-				cb(nil)
-				self.writeCallbacks.removeValue(forKey: tag)
-			}
-		}
-	}
-
-	@objc private func socket(_ sock: GCDAsyncSocket, didRead data: Data, withTag tag: Int) {
-		socket.delegateQueue!.async {
-			if let cb = self.readCallbacks[tag] {
-				cb(data)
-				self.readCallbacks.removeValue(forKey: tag)
-			}
-		}
-	}
-
-	func disconnect() {
-		self.socket.disconnect()
-		self.state = .unconnected
-	}
-
-	deinit {
-		self.socket.disconnect()
-	}
-}
-
-public enum ReProtocolVersion {
-	case v0_4
-	case v1_0
-
-	var protocolVersionCode: UInt32 {
-		switch self {
-		case .v0_4: return 0x400c2d20
-		case .v1_0: return 0x34c2bdc3
-		}
-	}
-}
-
 public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 	public let url: URL
 	public let protocolVersion: ReProtocolVersion
@@ -190,12 +35,12 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 	private var onConnectCallback: ((String?) -> ())? = nil
 
 	private static var tokenCounter = ReTokenCounter()
-	private let queue = DispatchQueue(label: "nl.pixelspark.Rethink.ReConnectionQueue", attributes: DispatchQueueAttributes.serial)
+	private let queue = DispatchQueue(label: "nl.pixelspark.Rethink.ReConnectionQueue")
 
 	/** Create a connection to a RethinkDB instance. The URL should be of the form 'rethinkdb://host:port'. If
 	no port is given, the default port is used. If the server requires the use of an authentication key, put it
 	in the 'user' part of the URL, e.g. "rethinkdb://key@server:port". */
-	internal init(url: URL, protocolVersion: ReProtocolVersion = .v1_0) {
+	internal init(url: URL, protocolVersion: ReProtocolVersion) {
 		self.url = url
 		self.protocolVersion = protocolVersion
 		self.socket = ReSocket(queue: self.queue)
@@ -210,7 +55,7 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 			// Start authentication
 			guard let data = NSMutableData(capacity: 128) else {
 				let e = ReError.fatal("Could not create data object")
-				self.state = .Error(e)
+				self.state = .error(e)
 				return callback(e)
 			}
 
@@ -237,7 +82,7 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 
 			self.socket.write(data as Data) { err in
 				if let e = err {
-					self.state = .Error(ReError.fatal(e))
+					self.state = .error(ReError.fatal(e))
 					return callback(ReError.fatal(e))
 				}
 
@@ -256,7 +101,7 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 							}
 							else {
 								let e = ReError.fatal("Handshake failed, server returned: \(s)")
-								self.state = .Error(e)
+								self.state = .error(e)
 								return callback(e)
 							}
 
@@ -276,7 +121,7 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 												return callback(nil)
 											}
 											else {
-												self.state = .Error(err!)
+												self.state = .error(err!)
 												return callback(err)
 											}
 										}
@@ -285,17 +130,17 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 										/* On error, the server will return a null-terminated error string (non JSON), 
 										or a JSON object with 'success' set to false. */
 										let e = ReError.fatal("Server returned \(replyString)")
-										self.state = .Error(e)
+										self.state = .error(e)
 										return callback(e)
 									}
 								}
 								else {
 									let e = ReError.fatal("Handshake failed, server returned: \(s)")
-									self.state = .Error(e)
+									self.state = .error(e)
 									return callback(e)
 								}
 							}
-							catch let error as NSError {
+							catch let error {
 								return callback(ReError.fatal(error.localizedDescription))
 							}
 						}
@@ -375,7 +220,7 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 														return callback(ReError.fatal("Server did not return a server final message in SCRAM exchange"))
 													}
 												}
-												catch let error as NSError {
+												catch let error {
 													return callback(ReError.fatal(error.localizedDescription))
 												}
 											}
@@ -402,13 +247,13 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 							return callback(ReError.fatal("Server did not return a reply to our first authentication message"))
 						}
 					}
-					catch let error as NSError {
+					catch let error {
 						return callback(ReError.fatal(error.localizedDescription))
 					}
 				}
 			}
 		}
-		catch let error as NSError {
+		catch let error {
 			return callback(ReError.fatal(error.localizedDescription))
 		}
 	}
@@ -429,7 +274,11 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 	}
 
 	public var error: ReError? {
-		return self.state.error
+		switch self.state {
+		case .error(let e):
+			return e
+		default: return nil
+		}
 	}
 
 	private func startReading() {
@@ -457,18 +306,18 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 									self.startReading()
 								}
 								else {
-									self.state = .Error(ReError.fatal("Invalid response object from server"))
+									self.state = .error(ReError.fatal("Invalid response object from server"))
 								}
 							}
 						}
 					}
 					else {
-						self.state = .Error(ReError.fatal("Disconnected"))
+						self.state = .error(ReError.fatal("Disconnected"))
 					}
 				})
 			}
 			else {
-				self.state = .Error(ReError.fatal("Disconnected"))
+				self.state = .error(ReError.fatal("Disconnected"))
 			}
 		}
 	}
@@ -500,7 +349,7 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 			data.append(query)
 			self.socket.write(data as Data) { err in
 				if let e = err {
-					self.state = .Error(ReError.fatal(e))
+					self.state = .error(ReError.fatal(e))
 					callback(ReResponse.error(e))
 				}
 				else {
@@ -522,122 +371,8 @@ private enum ReConnectionState {
 	case unconnected // Nothing has been done yet
 	case handshakeSent // Our handshake has been sent, we are waiting for confirmation of success
 	case connected // Handshake has been completed, and we are awaiting respones from the server
-	case Error(ReError) // A protocol error has occurred
+	case error(ReError) // A protocol error has occurred
 	case terminated // The connection has been terminated
-
-	var error: ReError? {
-		switch self {
-		case .Error(let e):
-			return e
-
-		default:
-			return nil
-		}
-	}
-}
-
-public enum ReError: ErrorProtocol {
-	case fatal(String)
-	case other(ErrorProtocol)
-
-	public var description: String {
-		switch self {
-		case .fatal(let s): return s
-		case .other(let e): return "\(e)"
-		}
-	}
-}
-
-public enum ReResponse {
-	public typealias Callback = (ReResponse) -> ()
-	public typealias ContinuationCallback = (Callback) -> ()
-
-	case error(String)
-	case Value(AnyObject)
-	case rows([ReDocument], ContinuationCallback?)
-	case unknown
-
-	init?(json: Data, continuation: ContinuationCallback) {
-		do {
-			if let d = try JSONSerialization.jsonObject(with: json, options: []) as? NSDictionary {
-				if let type = d.value(forKey: "t") as? NSNumber {
-					switch type.intValue {
-					case ReProtocol.responseTypeSuccessAtom:
-						guard let r = d.value(forKey: "r") as? [AnyObject] else { return nil }
-						if r.count != 1 { return nil }
-						self = .Value(ReDatum(jsonSerialization: r.first!).value)
-
-					case ReProtocol.responseTypeSuccessPartial, ReProtocol.responseTypeSuccessSequence:
-						if let r = d.value(forKey: "r") as? [[String: AnyObject]] {
-							let deserialized = r.map { (document) -> ReDocument in
-								var dedoc: ReDocument = [:]
-								for (k, v) in document {
-									dedoc[k] = ReDatum(jsonSerialization: v).value
-								}
-								return dedoc
-							}
-
-							self = .rows(deserialized, type.intValue == ReProtocol.responseTypeSuccessPartial ? continuation : nil)
-						}
-						else if let r = d.value(forKey: "r") as? [AnyObject] {
-							let deserialized = r.map { (value) -> AnyObject in
-								return ReDatum(jsonSerialization: value).value
-							}
-
-							self = .Value(deserialized)
-						}
-						else {
-							return nil
-						}
-
-					case ReProtocol.responseTypeClientError:
-						guard let r = d.value(forKey: "r") as? [AnyObject] else { return nil }
-						if r.count != 1 { return nil }
-						self = .error("Client error: \(r.first!)")
-
-					case ReProtocol.responseTypeCompileError:
-						guard let r = d.value(forKey: "r") as? [AnyObject] else { return nil }
-						if r.count != 1 { return nil }
-						self = .error("Compile error: \(r.first!)")
-
-					case ReProtocol.responseTypeRuntimeError:
-						guard let r = d.value(forKey: "r") as? [AnyObject] else { return nil }
-						if r.count != 1 { return nil }
-						self = .error("Run-time error: \(r.first!)")
-
-					default:
-						self = .unknown
-					}
-				}
-				else {
-					return nil
-				}
-			}
-			else {
-				return nil
-			}
-		}
-		catch {
-			return nil
-		}
-	}
-
-	public var isError: Bool {
-		switch self {
-		case .error(_): return true
-		default: return false
-		}
-	}
-
-	public var value: AnyObject? {
-		switch self {
-		case .Value(let v):
-			return v
-
-		default:
-			return nil
-		}
-	}
 }
 
 private extension Data {
