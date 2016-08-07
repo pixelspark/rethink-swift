@@ -10,6 +10,18 @@
 		65368F881CC6CDE700302942 /* SCRAM.h in Headers */ = {isa = PBXBuildFile; fileRef = 65368F871CC6CDE700302942 /* SCRAM.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		65368F8A1CC6CE1600302942 /* SCRAM.m in Sources */ = {isa = PBXBuildFile; fileRef = 65368F891CC6CE1600302942 /* SCRAM.m */; };
 		655E10F61CB64E63008E3057 /* ReArguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655E10F51CB64E63008E3057 /* ReArguments.swift */; };
+		65646BAB1D577F6100E58137 /* GCDAsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 65B3CC441CA1C39C003FC6DF /* GCDAsyncSocket.m */; };
+		65646BAC1D577F6100E58137 /* Rethink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65F739EB1BC9505B00B5E62D /* Rethink.swift */; };
+		65646BAD1D577F6100E58137 /* ReConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A115121BD0D3C9007BC661 /* ReConnection.swift */; };
+		65646BAE1D577F6100E58137 /* ReProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A115151BD0D4B8007BC661 /* ReProtocol.swift */; };
+		65646BAF1D577F6100E58137 /* ReDatum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A115241BD2B364007BC661 /* ReDatum.swift */; };
+		65646BB01D577F6100E58137 /* ReArguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655E10F51CB64E63008E3057 /* ReArguments.swift */; };
+		65646BB11D577F6100E58137 /* SCRAM.m in Sources */ = {isa = PBXBuildFile; fileRef = 65368F891CC6CE1600302942 /* SCRAM.m */; };
+		65646BB21D577F6100E58137 /* ReSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 658278531D4FD78200D36512 /* ReSocket.swift */; };
+		65646BB31D577F6100E58137 /* ReResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 658278551D4FD86100D36512 /* ReResponse.swift */; };
+		65646BB41D577F6B00E58137 /* Rethink.h in Headers */ = {isa = PBXBuildFile; fileRef = 65F739D41BC9502400B5E62D /* Rethink.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		65646BB51D577F7F00E58137 /* GCDAsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 65B3CC431CA1C39C003FC6DF /* GCDAsyncSocket.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		65646BB61D577F8200E58137 /* SCRAM.h in Headers */ = {isa = PBXBuildFile; fileRef = 65368F871CC6CDE700302942 /* SCRAM.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		658278541D4FD78200D36512 /* ReSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 658278531D4FD78200D36512 /* ReSocket.swift */; };
 		658278561D4FD86100D36512 /* ReResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 658278551D4FD86100D36512 /* ReResponse.swift */; };
 		65A115131BD0D3C9007BC661 /* ReConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A115121BD0D3C9007BC661 /* ReConnection.swift */; };
@@ -37,6 +49,7 @@
 		65368F871CC6CDE700302942 /* SCRAM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCRAM.h; sourceTree = "<group>"; };
 		65368F891CC6CE1600302942 /* SCRAM.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCRAM.m; sourceTree = "<group>"; };
 		655E10F51CB64E63008E3057 /* ReArguments.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReArguments.swift; sourceTree = "<group>"; };
+		65646BA31D577F2F00E58137 /* Rethink.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Rethink.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		658278531D4FD78200D36512 /* ReSocket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReSocket.swift; sourceTree = "<group>"; };
 		658278551D4FD86100D36512 /* ReResponse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReResponse.swift; sourceTree = "<group>"; };
 		65A115121BD0D3C9007BC661 /* ReConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReConnection.swift; sourceTree = "<group>"; };
@@ -55,6 +68,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		65646B9F1D577F2F00E58137 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		65F739CD1BC9502400B5E62D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -88,6 +108,7 @@
 			children = (
 				65F739D11BC9502400B5E62D /* Rethink.framework */,
 				65F739DB1BC9502400B5E62D /* RethinkTests.xctest */,
+				65646BA31D577F2F00E58137 /* Rethink.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -124,6 +145,16 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		65646BA01D577F2F00E58137 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				65646BB41D577F6B00E58137 /* Rethink.h in Headers */,
+				65646BB51D577F7F00E58137 /* GCDAsyncSocket.h in Headers */,
+				65646BB61D577F8200E58137 /* SCRAM.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		65F739CE1BC9502400B5E62D /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -137,6 +168,24 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		65646BA21D577F2F00E58137 /* Rethink iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 65646BAA1D577F3000E58137 /* Build configuration list for PBXNativeTarget "Rethink iOS" */;
+			buildPhases = (
+				65646B9E1D577F2F00E58137 /* Sources */,
+				65646B9F1D577F2F00E58137 /* Frameworks */,
+				65646BA01D577F2F00E58137 /* Headers */,
+				65646BA11D577F2F00E58137 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Rethink iOS";
+			productName = "Rethink iOS";
+			productReference = 65646BA31D577F2F00E58137 /* Rethink.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 		65F739D01BC9502400B5E62D /* Rethink */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 65F739E51BC9502400B5E62D /* Build configuration list for PBXNativeTarget "Rethink" */;
@@ -183,6 +232,11 @@
 				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = Pixelspark;
 				TargetAttributes = {
+					65646BA21D577F2F00E58137 = {
+						CreatedOnToolsVersion = 8.0;
+						DevelopmentTeam = 2T2T7HAA8S;
+						ProvisioningStyle = Automatic;
+					};
 					65F739D01BC9502400B5E62D = {
 						CreatedOnToolsVersion = 7.0.1;
 						LastSwiftMigration = 0800;
@@ -207,11 +261,19 @@
 			targets = (
 				65F739D01BC9502400B5E62D /* Rethink */,
 				65F739DA1BC9502400B5E62D /* RethinkTests */,
+				65646BA21D577F2F00E58137 /* Rethink iOS */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		65646BA11D577F2F00E58137 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		65F739CF1BC9502400B5E62D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -229,6 +291,22 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		65646B9E1D577F2F00E58137 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				65646BAB1D577F6100E58137 /* GCDAsyncSocket.m in Sources */,
+				65646BAC1D577F6100E58137 /* Rethink.swift in Sources */,
+				65646BAD1D577F6100E58137 /* ReConnection.swift in Sources */,
+				65646BAE1D577F6100E58137 /* ReProtocol.swift in Sources */,
+				65646BAF1D577F6100E58137 /* ReDatum.swift in Sources */,
+				65646BB01D577F6100E58137 /* ReArguments.swift in Sources */,
+				65646BB11D577F6100E58137 /* SCRAM.m in Sources */,
+				65646BB21D577F6100E58137 /* ReSocket.swift in Sources */,
+				65646BB31D577F6100E58137 /* ReResponse.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		65F739CC1BC9502400B5E62D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -264,6 +342,63 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		65646BA81D577F3000E58137 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = 2T2T7HAA8S;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = "$(SRCROOT)/Rethink/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = nl.pixelspark.Rethink;
+				PRODUCT_NAME = Rethink;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 3.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		65646BA91D577F3000E58137 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = 2T2T7HAA8S;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = "$(SRCROOT)/Rethink/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = nl.pixelspark.Rethink;
+				PRODUCT_NAME = Rethink;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 3.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		65F739E31BC9502400B5E62D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -422,6 +557,14 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		65646BAA1D577F3000E58137 /* Build configuration list for PBXNativeTarget "Rethink iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				65646BA81D577F3000E58137 /* Debug */,
+				65646BA91D577F3000E58137 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
 		65F739CB1BC9502400B5E62D /* Build configuration list for PBXProject "Rethink" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
