@@ -2,7 +2,7 @@ import XCTest
 import Rethink
 
 class RethinkTests: XCTestCase {
-	private func asyncTest(_ block: (callback: () -> ()) -> ()) {
+	private func asyncTest(_ block: (_ callback: @escaping () -> ()) -> ()) {
 		let expectFinish = self.expectation(description: "CSV tests")
 
 		block {
@@ -105,7 +105,7 @@ class RethinkTests: XCTestCase {
 							R.db(databaseName).table(tableName).changes().run(connection) { response in
 								XCTAssert(!response.isError, "Failed to obtain changes: \(response)")
 
-								var consumeChanges: ((response: ReResponse) -> ())? = nil
+								var consumeChanges: ((_ response: ReResponse) -> ())? = nil
 
 								consumeChanges = { (response: ReResponse) -> () in
 									if case ReResponse.rows(let docs, let cb) = response {
@@ -118,7 +118,7 @@ class RethinkTests: XCTestCase {
 									}
 								}
 
-								consumeChanges!(response: response)
+								consumeChanges!(response)
 
 							}
 

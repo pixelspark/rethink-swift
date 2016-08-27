@@ -37,8 +37,8 @@ public enum ReError {
 }
 
 public enum ReResponse {
-	public typealias Callback = (ReResponse) -> ()
-	public typealias ContinuationCallback = (Callback) -> ()
+	public typealias Callback = @escaping (ReResponse) -> ()
+	public typealias ContinuationCallback = @escaping (Callback) -> ()
 
 	case error(String)
 	case Value(Any)
