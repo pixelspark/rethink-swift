@@ -25,8 +25,8 @@ OTHER DEALINGS IN THE SOFTWARE. **/
 import Foundation
 
 public class R {
-	private static func optargs<T: ReArg>(_ args: [T]) -> AnyObject {
-		var dict: [String: AnyObject] = [:]
+	internal static func optargs<T: ReArg>(_ args: [T]) -> Any {
+		var dict: [String: Any] = [:]
 		for arg in args {
 			assert(dict[arg.serialization.0] == nil, "an optional argument may only be specified once")
 			dict[arg.serialization.0] = arg.serialization.1
@@ -34,7 +34,7 @@ public class R {
 		return dict
 	}
 
-	public static func connect(_ url: URL, user: String = ReProtocol.defaultUser, password: String = ReProtocol.defaultPassword, version: ReProtocolVersion = .v1_0, callback: (ReError?, ReConnection) -> ()) {
+	public static func connect(_ url: URL, user: String = ReProtocol.defaultUser, password: String = ReProtocol.defaultPassword, version: ReProtocolVersion = .v1_0, callback: @escaping (ReError?, ReConnection) -> ()) {
 		let c = ReConnection(url: url, protocolVersion: version)
 		c.connect(user, password: password) { err in
 			callback(err, c)
@@ -239,9 +239,9 @@ public class R {
 }
 
 public class ReQueryDatabase: ReQuery {
-	public let jsonSerialization: AnyObject
+	public let jsonSerialization: Any
 
-	private init(name: String) {
+	internal init(name: String) {
 		self.jsonSerialization = [ReTerm.db.rawValue, [name]]
 	}
 
@@ -275,9 +275,9 @@ public class ReQueryDatabase: ReQuery {
 }
 
 public class ReQuerySequence: ReQuery {
-	public let jsonSerialization: AnyObject
+	public let jsonSerialization: Any
 
-	private init(jsonSerialization: AnyObject) {
+	internal init(jsonSerialization: Any) {
 		self.jsonSerialization = jsonSerialization
 	}
 
@@ -310,7 +310,7 @@ public class ReQuerySequence: ReQuery {
 	}
 
 	public func filter(_ specification: [String: ReQueryValue], options: ReFilterArg...) -> ReQuerySequence {
-		var serialized: [String: AnyObject] = [:]
+		var serialized: [String: Any] = [:]
 		for (k, v) in specification {
 			serialized[k] = v.jsonSerialization
 		}
@@ -379,7 +379,7 @@ public class ReQuerySequence: ReQuery {
 	}
 
 	public func orderBy(sortKey: ReQueryValue) -> ReQuerySequence {
-		let querySequence: [AnyObject] = [
+		let querySequence: [Any] = [
 			ReTerm.order_BY.rawValue,
 			[self.jsonSerialization, sortKey.jsonSerialization],
 		]
@@ -413,7 +413,7 @@ public class ReQueryStream: ReQuerySequence {
 }
 
 public class ReQueryTable: ReQuerySequence {
-	private init(database: ReQueryDatabase, name: String, options: [ReTableArg]) {
+	internal init(database: ReQueryDatabase, name: String, options: [ReTableArg]) {
 		let x = R.optargs(options)
 		super.init(jsonSerialization: [ReTerm.table.rawValue, [database.jsonSerialization, name], x])
 	}
@@ -476,7 +476,7 @@ public class ReQueryTable: ReQuerySequence {
 	/** Get the status of the specified indexes on this table, or the status of all indexes on this table if no indexes 
 	are specified. */
 	public func indexStatus(_ indices: String...) -> ReQueryValue {
-		var params: [AnyObject] = [self.jsonSerialization]
+		var params: [Any] = [self.jsonSerialization]
 		indices.forEach { params.append($0) }
 		return ReDatum(jsonSerialization: [ReTerm.index_status.rawValue, params])
 	}
@@ -493,7 +493,7 @@ public class ReQueryTable: ReQuerySequence {
 		return ReDatum(jsonSerialization: [ReTerm.wait.rawValue, [self.jsonSerialization]])
 	}
 
-	public func get(_ primaryKey: AnyObject) -> ReQueryRow {
+	public func get(_ primaryKey: Any) -> ReQueryRow {
 		return ReQueryRow(jsonSerialization: [ReTerm.get.rawValue, [self.jsonSerialization, primaryKey]])
 	}
 
@@ -513,7 +513,7 @@ public class ReQueryTable: ReQuerySequence {
 	}
 
 	public func orderBy(index: ReQueryValue) -> ReQuerySequence {
-		var querySequence: [AnyObject] = [ReTerm.order_BY.rawValue, [self.jsonSerialization]]
+		var querySequence: [Any] = [ReTerm.order_BY.rawValue, [self.jsonSerialization]]
 		querySequence.append(["index": index.jsonSerialization])
 		return ReQuerySequence(jsonSerialization: querySequence)
 	}
@@ -536,7 +536,7 @@ public class ReQueryTable: ReQuerySequence {
 }
 
 public protocol ReQuery {
-	var jsonSerialization: AnyObject { get }
+	var jsonSerialization: Any { get }
 }
 
 public protocol ReQueryValue: ReQuery {
@@ -568,7 +568,7 @@ public extension ReQuery {
 	typealias Callback = (ReResponse) -> ()
 
 	public func run(_ connection: ReConnection, callback: Callback) {
-		let query: [AnyObject] = [ReProtocol.ReQueryType.start.rawValue, self.jsonSerialization];
+		let query: [Any] = [ReProtocol.ReQueryType.start.rawValue, self.jsonSerialization];
 
 		do {
 			let json = try JSONSerialization.data(withJSONObject: query, options: [])
@@ -599,19 +599,19 @@ public extension ReQuery {
 }
 
 extension String: ReQueryValue {
-	public var jsonSerialization: AnyObject { get { return self } }
+	public var jsonSerialization: Any { get { return self } }
 }
 
 extension Int: ReQueryValue {
-	public var jsonSerialization: AnyObject { get { return self } }
+	public var jsonSerialization: Any { get { return self } }
 }
 
 extension Double: ReQueryValue {
-	public var jsonSerialization: AnyObject { get { return self } }
+	public var jsonSerialization: Any { get { return self } }
 }
 
 extension Bool: ReQueryValue {
-	public var jsonSerialization: AnyObject { get { return self } }
+	public var jsonSerialization: Any { get { return self } }
 }
 
 public extension ReQueryValue {
@@ -787,7 +787,7 @@ public prefix func !(lhs: ReQueryValue) -> ReQueryValue {
 public typealias RePredicate = (ReQueryValue) -> (ReQuery)
 
 public class ReQueryLambda: ReQuery {
-	public let jsonSerialization: AnyObject
+	public let jsonSerialization: Any
 	private static var parameterCounter = 0
 
 	init(block: RePredicate) {

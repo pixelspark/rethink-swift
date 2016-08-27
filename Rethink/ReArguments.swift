@@ -13,7 +13,7 @@ public enum ReTableIdentifierFormat: String {
 
 /** Optional arguments are instances of ReArg. */
 public protocol ReArg {
-	var serialization: (String, AnyObject) { get }
+	var serialization: (String, Any) { get }
 }
 
 /** Optional arguments for the R.table command. */
@@ -21,7 +21,7 @@ public enum ReTableArg: ReArg {
 	case readMode(ReTableReadMode)
 	case identifierFormat(ReTableIdentifierFormat)
 
-	public var serialization: (String, AnyObject) {
+	public var serialization: (String, Any) {
 		switch self {
 		case .readMode(let rm): return ("read_mode", rm.rawValue)
 		case .identifierFormat(let i): return ("identifier_format", i.rawValue)
@@ -32,7 +32,7 @@ public enum ReTableArg: ReArg {
 public enum ReFilterArg: ReArg {
 	case `default`(AnyObject)
 
-	public var serialization: (String, AnyObject) {
+	public var serialization: (String, Any) {
 		switch self {
 		case .default(let a): return ("default", a)
 		}
@@ -50,7 +50,7 @@ public enum ReTableCreateArg: ReArg {
 	case shards(Int)
 	case replicas(Int)
 
-	public var serialization: (String, AnyObject) {
+	public var serialization: (String, Any) {
 		switch self {
 		case .primaryKey(let p): return ("primary_key", p)
 		case .durability(let d): return ("durability", d.rawValue)
@@ -64,7 +64,7 @@ public enum ReIndexCreateArg: ReArg {
 	case multi(Bool)
 	case geo(Bool)
 
-	public var serialization: (String, AnyObject) {
+	public var serialization: (String, Any) {
 		switch self {
 		case .multi(let m): return ("multi", m)
 		case .geo(let g): return ("geo", g)
@@ -78,7 +78,7 @@ public enum ReIndexRenameArg: ReArg {
 	name already exists. */
 	case overwrite(Bool)
 
-	public var serialization: (String, AnyObject) {
+	public var serialization: (String, Any) {
 		switch self {
 		case .overwrite(let o): return ("overwrite", o)
 		}
@@ -91,7 +91,7 @@ public enum RePermission: ReArg {
 	case connect(Bool)
 	case config(Bool)
 
-	public var serialization: (String, AnyObject) {
+	public var serialization: (String, Any) {
 		switch self {
 		case .read(let b): return ("read", b)
 		case .write(let b): return ("write", b)
@@ -139,7 +139,7 @@ public enum ReChangesArg: ReArg {
 	kind of change the result represents: add, remove, change, initial, uninitial, state. Defaults to false.*/
 	case includeTypes(Bool)
 
-	public var serialization: (String, AnyObject) {
+	public var serialization: (String, Any) {
 		switch self {
 		case .squash(let b, let i):
 			assert(!(i != nil && !b), "Do not specify a time interval when squashing is to be disabled")
@@ -169,7 +169,7 @@ public enum ReFoldArg: ReArg {
 	case emit(ReQueryLambda)
 	case finalEmit(ReQueryLambda)
 
-	public var serialization: (String, AnyObject) {
+	public var serialization: (String, Any) {
 		switch self {
 		case .emit(let r): return ("emit", r)
 		case .finalEmit(let r): return ("final_emit", r)
@@ -186,7 +186,7 @@ public enum ReEqJoinArg: ReArg {
 	case ordered(Bool)
 	case index(String)
 
-	public var serialization: (String, AnyObject) {
+	public var serialization: (String, Any) {
 		switch self {
 		case .ordered(let o): return ("ordered", o)
 		case .index(let i): return ("index", i)
@@ -222,7 +222,7 @@ public enum ReInsertArg: ReArg {
 	/** Determine handling of inserting documents with the same primary key as existing entries.  */
 	case conflict(ReConflictResolution)
 
-	public var serialization: (String, AnyObject) {
+	public var serialization: (String, Any) {
 		switch self {
 		case .durability(let d): return ("durability", d.rawValue)
 		case .returnChanges(let r): return ("return_changes", r)
@@ -244,7 +244,7 @@ public enum ReUpdateArg: ReArg {
 	required to perform non-deterministic updates, such as those that require reading data from another table. */
 	case nonAtomic(Bool)
 
-	public var serialization: (String, AnyObject) {
+	public var serialization: (String, Any) {
 		switch self {
 		case .durability(let d): return ("durability", d.rawValue)
 		case .returnChanges(let r): return ("return_changes", r)
@@ -262,7 +262,7 @@ public enum ReDeleteArg: ReArg {
 	documents actually updated. false: do not return a changes array (the default). */
 	case returnChanges(Bool)
 
-	public var serialization: (String, AnyObject) {
+	public var serialization: (String, Any) {
 		switch self {
 		case .durability(let d): return ("durability", d.rawValue)
 		case .returnChanges(let r): return ("return_changes", r)
@@ -297,7 +297,7 @@ public enum ReCircleArg: ReArg {
 	/** If true (the default) the circle is filled, creating a polygon; if false the circle is unfilled (creating a line). */
 	case fill(Bool)
 
-	public var serialization: (String, AnyObject) {
+	public var serialization: (String, Any) {
 		switch self {
 		case .numVertices(let n): return ("num_vertices", n)
 		case .geoSystem(let s): return ("geo_system", s.rawValue)
@@ -311,7 +311,7 @@ public enum ReDistanceArg: ReArg {
 	case geoSystem(ReGeoSystem)
 	case unit(ReUnit)
 
-	public var serialization: (String, AnyObject) {
+	public var serialization: (String, Any) {
 		switch self {
 		case .geoSystem(let s): return ("geo_system", s.rawValue)
 		case .unit(let u): return ("unit", u.rawValue)
@@ -325,7 +325,7 @@ public enum ReIntersectingArg: ReArg {
 	defaults to 100,000, but can be changed with the arrayLimit option to run. */
 	case index(String)
 
-	public var serialization: (String, AnyObject) {
+	public var serialization: (String, Any) {
 		switch self {
 		case .index(let s): return ("index", s)
 		}

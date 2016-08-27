@@ -46,7 +46,7 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 		self.socket = ReSocket(queue: self.queue)
 	}
 
-	internal func connect(_ username: String = ReProtocol.defaultUser, password: String = ReProtocol.defaultPassword, callback: (ReError?) -> ()) {
+	internal func connect(_ username: String = ReProtocol.defaultUser, password: String = ReProtocol.defaultPassword, callback: @escaping (ReError?) -> ()) {
 		self.socket.connect(self.url) { err in
 			if let e = err {
 				return callback(ReError.fatal(e))
@@ -150,14 +150,14 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 		}
 	}
 
-	private func performSCRAMAuthentication(_ username: String, password: String, callback: (ReError?) -> ()) {
+	private func performSCRAMAuthentication(_ username: String, password: String, callback: @escaping (ReError?) -> ()) {
 		assert(self.protocolVersion == .v1_0, "SCRAM authentication not supported with protocol version \(self.protocolVersion)")
 		let scram = SCRAM(username: username, password: password)
 		var zeroByte: UInt8 = 0x00
 
 		// Send authentication first message
 		do {
-			let firstMessage = ["protocol_version": 0, "authentication_method": "SCRAM-SHA-256", "authentication": scram.clientFirstMessage]
+			let firstMessage: [String: Any] = ["protocol_version": 0, "authentication_method": "SCRAM-SHA-256", "authentication": scram.clientFirstMessage]
 			let data = try JSONSerialization.data(withJSONObject: firstMessage, options: [])
 			var zeroTerminatedData = NSData(data: data) as Data
 			zeroTerminatedData.append(&zeroByte, count: 1)
@@ -402,21 +402,27 @@ private extension Data {
 
 	func readLittleEndianUInt64(_ atIndex: Int = 0) -> UInt64 {
 		assert(self.count >= atIndex + 8)
-		let buffer = UnsafeMutablePointer<UInt8>((self as NSData).bytes)
+
 		var read: UInt64 = 0
-		for i in (0...7).reversed() {
-			read = (read << 8) + UInt64(buffer[atIndex + i])
+		self.withUnsafeBytes { (buffer: UnsafePointer<UInt8>) in
+			for i in (0...7).reversed() {
+				read = (read << 8) + UInt64(buffer[atIndex + i])
+			}
 		}
+
 		return CFSwapInt64LittleToHost(read)
 	}
 
 	func readLittleEndianUInt32(_ atIndex: Int = 0) -> UInt32 {
 		assert(self.count >= (atIndex + 4))
-		let buffer = UnsafeMutablePointer<UInt8>((self as NSData).bytes)
+
 		var read: UInt32 = 0
-		for i in (0...3).reversed() {
-			read = (read << 8) + UInt32(buffer[atIndex + i])
+		self.withUnsafeBytes { (buffer: UnsafePointer<UInt8>) in
+			for i in (0...3).reversed() {
+				read = (read << 8) + UInt32(buffer[atIndex + i])
+			}
 		}
+
 		return CFSwapInt32LittleToHost(read)
 	}
 }

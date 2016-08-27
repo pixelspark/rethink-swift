@@ -47,7 +47,7 @@ internal class ReSocket: NSObject, GCDAsyncSocketDelegate {
 		self.socket.delegate = self
 	}
 
-	func connect(_ url: URL, withTimeout timeout: TimeInterval = 5.0, callback: (String?) -> ()) {
+	func connect(_ url: URL, withTimeout timeout: TimeInterval = 5.0, callback: @escaping (String?) -> ()) {
 		assert(self.state == .unconnected, "Already connected or connecting")
 		self.onConnect = callback
 		self.state = .connecting
@@ -86,7 +86,7 @@ internal class ReSocket: NSObject, GCDAsyncSocketDelegate {
 		}
 	}
 
-	func readZeroTerminatedASCII(_ callback: (String?) -> ()) {
+	func readZeroTerminatedASCII(_ callback: @escaping (String?) -> ()) {
 		if self.state != .connected {
 			return callback(nil)
 		}
@@ -201,7 +201,7 @@ internal class Mutex {
 		pthread_mutex_destroy(&self.mutex)
 	}
 
-	@discardableResult public final func locked<T>(_ file: StaticString = #file, line: UInt = #line, block: @noescape () -> (T)) -> T {
+	@discardableResult public final func locked<T>(_ file: StaticString = #file, line: UInt = #line, block: () -> (T)) -> T {
 		self.lock()
 		defer {
 			self.unlock()

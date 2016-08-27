@@ -24,10 +24,10 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE. **/
 import Foundation
 
-public typealias ReDocument = [String: AnyObject]
+public typealias ReDocument = [String: Any]
 
 public class ReDatum: ReQueryValue {
-	public let jsonSerialization: AnyObject
+	public let jsonSerialization: Any
 	private static let reqlTypeTime = "TIME"
 	private static let reqlTypeBinary = "BINARY"
 	private static let reqlSpecialKey = "$reql_type$"
@@ -61,7 +61,7 @@ public class ReDatum: ReQueryValue {
 	}
 
 	internal init(object: [String: ReQueryValue]) {
-		var serialized: [String: AnyObject] = [:]
+		var serialized: [String: Any] = [:]
 		for (key, value) in object {
 			serialized[key] = value.jsonSerialization
 		}
@@ -76,14 +76,14 @@ public class ReDatum: ReQueryValue {
 		self.jsonSerialization = [ReDatum.reqlSpecialKey: ReDatum.reqlTypeBinary, "data": data.base64EncodedString(options: [])]
 	}
 
-	internal init(jsonSerialization: AnyObject) {
+	internal init(jsonSerialization: Any) {
 		self.jsonSerialization = jsonSerialization
 	}
 
-	internal var value: AnyObject { get {
-		if let d = self.jsonSerialization as? [String: AnyObject], let t = d[ReDatum.reqlSpecialKey] as? String {
+	internal var value: Any { get {
+		if let d = self.jsonSerialization as? [String: Any], let t = d[ReDatum.reqlSpecialKey] as? String {
 			if t == ReDatum.reqlTypeBinary {
-				if let data = self.jsonSerialization.value(forKey: "data") as? String {
+				if let data = (self.jsonSerialization as AnyObject).value(forKey: "data") as? String {
 					return Data(base64Encoded: data, options: [])!
 				}
 				else {
@@ -91,7 +91,9 @@ public class ReDatum: ReQueryValue {
 				}
 			}
 			else if t == ReDatum.reqlTypeTime {
-				if let epochTime = self.jsonSerialization.value(forKey: "epoch_time"), let timezone = self.jsonSerialization.value(forKey: "timezone") as? String {
+				let epochTime = (self.jsonSerialization as AnyObject).value(forKey: "epoch_time") as AnyObject
+				
+				if let timezone = (self.jsonSerialization as AnyObject).value(forKey: "timezone") as? String {
 					// TODO: interpret server timezone other than +00:00 (UTC)
 					assert(timezone == "+00:00", "support for timezones other than UTC not implemented (yet)")
 					return Date(timeIntervalSince1970: epochTime.doubleValue!)

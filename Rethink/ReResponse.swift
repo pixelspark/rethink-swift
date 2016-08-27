@@ -41,7 +41,7 @@ public enum ReResponse {
 	public typealias ContinuationCallback = (Callback) -> ()
 
 	case error(String)
-	case Value(AnyObject)
+	case Value(Any)
 	case rows([ReDocument], ContinuationCallback?)
 	case unknown
 
@@ -51,12 +51,12 @@ public enum ReResponse {
 				if let type = d.value(forKey: "t") as? NSNumber {
 					switch type.intValue {
 					case ReProtocol.responseTypeSuccessAtom:
-						guard let r = d.value(forKey: "r") as? [AnyObject] else { return nil }
+						guard let r = d.value(forKey: "r") as? [Any] else { return nil }
 						if r.count != 1 { return nil }
 						self = .Value(ReDatum(jsonSerialization: r.first!).value)
 
 					case ReProtocol.responseTypeSuccessPartial, ReProtocol.responseTypeSuccessSequence:
-						if let r = d.value(forKey: "r") as? [[String: AnyObject]] {
+						if let r = d.value(forKey: "r") as? [[String: Any]] {
 							let deserialized = r.map { (document) -> ReDocument in
 								var dedoc: ReDocument = [:]
 								for (k, v) in document {
@@ -67,8 +67,8 @@ public enum ReResponse {
 
 							self = .rows(deserialized, type.intValue == ReProtocol.responseTypeSuccessPartial ? continuation : nil)
 						}
-						else if let r = d.value(forKey: "r") as? [AnyObject] {
-							let deserialized = r.map { (value) -> AnyObject in
+						else if let r = d.value(forKey: "r") as? [Any] {
+							let deserialized = r.map { (value) -> Any in
 								return ReDatum(jsonSerialization: value).value
 							}
 
@@ -79,17 +79,17 @@ public enum ReResponse {
 						}
 
 					case ReProtocol.responseTypeClientError:
-						guard let r = d.value(forKey: "r") as? [AnyObject] else { return nil }
+						guard let r = d.value(forKey: "r") as? [Any] else { return nil }
 						if r.count != 1 { return nil }
 						self = .error("Client error: \(r.first!)")
 
 					case ReProtocol.responseTypeCompileError:
-						guard let r = d.value(forKey: "r") as? [AnyObject] else { return nil }
+						guard let r = d.value(forKey: "r") as? [Any] else { return nil }
 						if r.count != 1 { return nil }
 						self = .error("Compile error: \(r.first!)")
 
 					case ReProtocol.responseTypeRuntimeError:
-						guard let r = d.value(forKey: "r") as? [AnyObject] else { return nil }
+						guard let r = d.value(forKey: "r") as? [Any] else { return nil }
 						if r.count != 1 { return nil }
 						self = .error("Run-time error: \(r.first!)")
 
@@ -117,7 +117,7 @@ public enum ReResponse {
 		}
 	}
 
-	public var value: AnyObject? {
+	public var value: Any? {
 		switch self {
 		case .Value(let v):
 			return v
