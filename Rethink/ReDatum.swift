@@ -96,7 +96,7 @@ public class ReDatum: ReQueryValue {
 				if let timezone = (self.jsonSerialization as AnyObject).value(forKey: "timezone") as? String {
 					// TODO: interpret server timezone other than +00:00 (UTC)
 					assert(timezone == "+00:00", "support for timezones other than UTC not implemented (yet)")
-					return Date(timeIntervalSince1970: epochTime.doubleValue!)
+					return Date(timeIntervalSince1970: epochTime as! Double)
 				}
 				else {
 					fatalError("invalid date received")
