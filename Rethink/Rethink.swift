@@ -318,21 +318,21 @@ public class ReQuerySequence: ReQuery {
 	}
 
 	public func filter(_ predicate: RePredicate) -> ReQuerySequence {
-		let fun = ReQueryLambda(block: predicate)
+		let fun = ReQueryLambda(predicate)
 		return ReQuerySequence(jsonSerialization: [ReTerm.filter.rawValue, [self.jsonSerialization, fun.jsonSerialization]])
 	}
 
 	public func forEach(_ block: RePredicate) -> ReQuerySequence {
-		let fun = ReQueryLambda(block: block)
+		let fun = ReQueryLambda(block)
 		return ReQuerySequence(jsonSerialization: [ReTerm.for_each.rawValue, [self.jsonSerialization, fun.jsonSerialization]])
 	}
 
 	public func innerJoin(_ foreign: ReQuerySequence, predicate: RePredicate) -> ReQueryStream {
-		return ReQueryStream(jsonSerialization: [ReTerm.inner_join.rawValue, [self.jsonSerialization, foreign.jsonSerialization, ReQueryLambda(block: predicate).jsonSerialization]])
+		return ReQueryStream(jsonSerialization: [ReTerm.inner_join.rawValue, [self.jsonSerialization, foreign.jsonSerialization, ReQueryLambda(predicate).jsonSerialization]])
 	}
 
 	public func outerJoin(_ foreign: ReQuerySequence, predicate: RePredicate) -> ReQueryStream {
-		return ReQueryStream(jsonSerialization: [ReTerm.outer_join.rawValue, [self.jsonSerialization, foreign.jsonSerialization, ReQueryLambda(block: predicate).jsonSerialization]])
+		return ReQueryStream(jsonSerialization: [ReTerm.outer_join.rawValue, [self.jsonSerialization, foreign.jsonSerialization, ReQueryLambda(predicate).jsonSerialization]])
 	}
 
 	public func eqJoin(_ leftField: ReQueryValue, foreign: ReQueryTable, options: ReEqJoinArg...) -> ReQuerySequence {
@@ -344,7 +344,7 @@ public class ReQuerySequence: ReQuery {
 	}
 
 	public func map(_ block: RePredicate) -> ReQuerySequence {
-		return self.map(ReQueryLambda(block: block))
+		return self.map(ReQueryLambda(block))
 	}
 
 	public func withFields(_ fields: [ReQueryValue]) -> ReQuerySequence {
@@ -373,7 +373,7 @@ public class ReQuerySequence: ReQuery {
 		return ReDatum(jsonSerialization: [ReTerm.fold.rawValue, [self.jsonSerialization, base.jsonSerialization, accumulator.jsonSerialization], R.optargs(options)])
 	}
 
-	public func withoutFields(fields: [ReQueryValue]) -> ReQuerySequence {
+	public func without(fields: [ReQueryValue]) -> ReQuerySequence {
 		let values = fields.map({ e in return e.jsonSerialization })
 		return ReQuerySequence(jsonSerialization: [ReTerm.without.rawValue, [self.jsonSerialization, [ReTerm.make_array.rawValue, values]]])
 	}
@@ -433,6 +433,10 @@ public class ReQueryTable: ReQuerySequence {
 		return ReDatum(jsonSerialization: [ReTerm.update.rawValue, [self.jsonSerialization, changes], R.optargs(options)])
 	}
 
+	public func update(_ changes: ReModification, options: ReUpdateArg...) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.update.rawValue, [self.jsonSerialization, ReQueryLambda(changes).jsonSerialization], R.optargs(options)])
+	}
+
 	/** Replace documents in a table. Accepts a JSON document or a ReQL expression, and replaces the original document with
 	 the new one. The new document must have the same primary key as the original document.
 
@@ -442,6 +446,10 @@ public class ReQueryTable: ReQuerySequence {
 	as well. */
 	public func replace(_ changes: ReDocument, options: ReUpdateArg...) -> ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.replace.rawValue, [self.jsonSerialization, changes], R.optargs(options)])
+	}
+
+	public func replace(_ changes: RePredicate, options: ReUpdateArg...) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.replace.rawValue, [self.jsonSerialization, ReQueryLambda(changes).jsonSerialization], R.optargs(options)])
 	}
 
 	/** Create a new secondary index on a table. Secondary indexes improve the speed of many read queries at the slight 
@@ -726,6 +734,11 @@ public extension ReQueryValue {
 	public subscript(key: String) -> ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.bracket.rawValue, [self.jsonSerialization, key]])
 	}
+
+	public func without(fields: [ReQueryValue]) -> ReQuerySequence {
+		let values = fields.map({ e in return e.jsonSerialization })
+		return ReQuerySequence(jsonSerialization: [ReTerm.without.rawValue, [self.jsonSerialization, [ReTerm.make_array.rawValue, values]]])
+	}
 }
 
 public func +(lhs: ReQueryValue, rhs: ReQueryValue) -> ReQueryValue {
@@ -784,13 +797,15 @@ public prefix func !(lhs: ReQueryValue) -> ReQueryValue {
 	return lhs.not()
 }
 
-public typealias RePredicate = (ReQueryValue) -> (ReQuery)
+public typealias ReModification = @escaping (ReQueryValue) -> ([String: ReQuery])
+
+public typealias RePredicate = @escaping (ReQueryValue) -> (ReQuery)
 
 public class ReQueryLambda: ReQuery {
 	public let jsonSerialization: Any
 	private static var parameterCounter = 0
 
-	init(block: RePredicate) {
+	init(_ block: RePredicate) {
 		ReQueryLambda.parameterCounter += 1
 		let p = ReQueryLambda.parameterCounter
 		let parameter = ReDatum(jsonSerialization: p)
@@ -801,6 +816,26 @@ public class ReQueryLambda: ReQuery {
 						[ReTerm.make_array.rawValue, [parameter.jsonSerialization]],
 						block(parameterAccess).jsonSerialization
 				]
+		]
+	}
+
+	init(_ block: ReModification) {
+		ReQueryLambda.parameterCounter += 1
+		let p = ReQueryLambda.parameterCounter
+		let parameter = ReDatum(jsonSerialization: p)
+		let parameterAccess = ReDatum(jsonSerialization: [ReTerm.var.rawValue, [parameter.jsonSerialization]])
+
+		let changes = block(parameterAccess)
+		var serializedChanges: [String: Any] = [:]
+		for (k, v) in changes {
+			serializedChanges[k] = v.jsonSerialization
+		}
+
+		self.jsonSerialization = [
+			ReTerm.func.rawValue, [
+				[ReTerm.make_array.rawValue, [parameter.jsonSerialization]],
+				serializedChanges
+			]
 		]
 	}
 }
