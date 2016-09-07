@@ -72,7 +72,7 @@ internal class ReSocket: NSObject, GCDAsyncSocketDelegate {
 		self.state = .unconnected
 	}
 
-	func read(_ length: Int, callback: ReadCallback)  {
+	func read(_ length: Int, callback: @escaping ReadCallback)  {
 		assert(length > 0, "Length cannot be zero or less")
 
 		if self.state != .connected {
@@ -111,7 +111,7 @@ internal class ReSocket: NSObject, GCDAsyncSocketDelegate {
 		}
 	}
 
-	func write(_ data: Data, callback: WriteCallback) {
+	func write(_ data: Data, callback: @escaping WriteCallback) {
 		if self.state != .connected {
 			return callback("socket is not connected!")
 		}

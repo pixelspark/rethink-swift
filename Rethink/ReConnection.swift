@@ -292,11 +292,11 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 						assert(d.count == Int(responseSize))
 
 						var called = false
-						let continuation: ReResponse.ContinuationCallback = { [weak self] (cb: ReResponse.Callback) -> () in
+						let continuation: ReResponse.ContinuationCallback = { [weak self] (cb: @escaping ReResponse.Callback) -> () in
 							assert(!called, "continuation callback for query token \(queryToken) must never be called more than once")
 							called = true
 							self?.sendContinuation(queryToken, callback: cb)
-						}
+						} as! ReResponse.ContinuationCallback
 
 						self.queue.async {
 							if let handler = self.outstandingQueries[queryToken] {
@@ -322,7 +322,7 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 		}
 	}
 
-	private func sendContinuation(_ token: ReQueryToken, callback: ReResponse.Callback) {
+	private func sendContinuation(_ token: ReQueryToken, callback: @escaping ReResponse.Callback) {
 		let json = [ReProtocol.ReQueryType.continue.rawValue];
 		let query = try! JSONSerialization.data(withJSONObject: json, options: [])
 		self.sendQuery(query, token: token, callback: callback)
@@ -331,7 +331,7 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 	private func dummy() {
 	}
 
-	private func sendQuery(_ query: Data, token: ReQueryToken, callback: ReResponse.Callback) {
+	private func sendQuery(_ query: Data, token: ReQueryToken, callback: @escaping ReResponse.Callback) {
 		queue.async {
 			assert(self.outstandingQueries[token] == nil, "A query with token \(token) is already outstanding")
 			assert(self.connected, "Cannot send a query when the connection is not open")
@@ -359,7 +359,7 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 		}
 	}
 
-	internal func startQuery(_ query: Data, callback: ReResponse.Callback) throws {
+	internal func startQuery(_ query: Data, callback: @escaping ReResponse.Callback) throws {
 		queue.async {
 			let token = ReConnection.tokenCounter.next()
 			self.sendQuery(query, token: token, callback: callback)

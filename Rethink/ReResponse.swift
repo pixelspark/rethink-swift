@@ -37,15 +37,15 @@ public enum ReError {
 }
 
 public enum ReResponse {
-	public typealias Callback = @escaping (ReResponse) -> ()
-	public typealias ContinuationCallback = @escaping (Callback) -> ()
+	public typealias Callback = (ReResponse) -> ()
+	public typealias ContinuationCallback = (Callback) -> ()
 
 	case error(String)
 	case Value(Any)
 	case rows([ReDocument], ContinuationCallback?)
 	case unknown
 
-	init?(json: Data, continuation: ContinuationCallback) {
+	init?(json: Data, continuation: @escaping ContinuationCallback) {
 		do {
 			if let d = try JSONSerialization.jsonObject(with: json, options: []) as? NSDictionary {
 				if let type = d.value(forKey: "t") as? NSNumber {
@@ -65,7 +65,8 @@ public enum ReResponse {
 								return dedoc
 							}
 
-							self = .rows(deserialized, type.intValue == ReProtocol.responseTypeSuccessPartial ? continuation : nil)
+							let ccb: ContinuationCallback? = (type.intValue == ReProtocol.responseTypeSuccessPartial) ? continuation: nil
+							self = .rows(deserialized, ccb)
 						}
 						else if let r = d.value(forKey: "r") as? [Any] {
 							let deserialized = r.map { (value) -> Any in

@@ -575,7 +575,7 @@ public enum ReTypeName: String {
 public extension ReQuery {
 	typealias Callback = (ReResponse) -> ()
 
-	public func run(_ connection: ReConnection, callback: Callback) {
+	public func run(_ connection: ReConnection, callback: @escaping Callback) {
 		let query: [Any] = [ReProtocol.ReQueryType.start.rawValue, self.jsonSerialization];
 
 		do {
@@ -797,9 +797,9 @@ public prefix func !(lhs: ReQueryValue) -> ReQueryValue {
 	return lhs.not()
 }
 
-public typealias ReModification = @escaping (ReQueryValue) -> ([String: ReQuery])
+public typealias ReModification = (ReQueryValue) -> ([String: ReQuery])
 
-public typealias RePredicate = @escaping (ReQueryValue) -> (ReQuery)
+public typealias RePredicate = (ReQueryValue) -> (ReQuery)
 
 public class ReQueryLambda: ReQuery {
 	public let jsonSerialization: Any
