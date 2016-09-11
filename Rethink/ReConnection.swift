@@ -296,7 +296,7 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 							assert(!called, "continuation callback for query token \(queryToken) must never be called more than once")
 							called = true
 							self?.sendContinuation(queryToken, callback: cb)
-						} as! ReResponse.ContinuationCallback
+						}
 
 						self.queue.async {
 							if let handler = self.outstandingQueries[queryToken] {
