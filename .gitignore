@@ -1,2 +1,5 @@
-Rethink.xcodeproj/project.xcworkspace/xcuserdata
+.build
+.DS_Store
+Rethink.xcodeproj/GeneratedModuleMap
 Rethink.xcodeproj/xcuserdata
+Rethink.xcodeproj/project.xcworkspace/xcuserdata
