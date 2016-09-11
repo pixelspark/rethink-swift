@@ -1,5 +1,6 @@
 import XCTest
 import Rethink
+import SCRAM
 
 class RethinkTests: XCTestCase {
 	private func asyncTest(_ block: (_ callback: @escaping () -> ()) -> ()) {
