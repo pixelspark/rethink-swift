@@ -82,6 +82,7 @@
 		29CA96FA1D8877040027D914 /* SCRAM.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SCRAM.h; path = include/SCRAM.h; sourceTree = "<group>"; };
 		29CA96FB1D8877040027D914 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		29CA97051D8877100027D914 /* SCRAM.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SCRAM.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		29CA97BA1D8883540027D914 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		65368F891CC6CE1600302942 /* SCRAM.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SCRAM.m; path = Sources/SCRAM/SCRAM.m; sourceTree = SOURCE_ROOT; };
 		655E10F51CB64E63008E3057 /* ReArguments.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ReArguments.swift; path = Sources/Rethink/ReArguments.swift; sourceTree = SOURCE_ROOT; };
 		65646BA31D577F2F00E58137 /* Rethink.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Rethink.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -180,6 +181,7 @@
 		65F739C71BC9502400B5E62D = {
 			isa = PBXGroup;
 			children = (
+				29CA97BA1D8883540027D914 /* Package.swift */,
 				65F739ED1BCA695F00B5E62D /* README.md */,
 				65F739D31BC9502400B5E62D /* Rethink */,
 				29CA96DF1D8876EB0027D914 /* GCDAsyncSocket */,
