@@ -54,7 +54,17 @@ The driver is written for Swift 3. The last version working in Swift 2.2 can be 
 
 ### Installation
 
-Drag Rethink.xcodeproj into your own project, then add Rethink.framework as dependency (build targets) and link to it.
+#### Swift Package Manager (SPM)
+
+You can install the driver using Swift Package Manager by adding the following line to your ```Package.swift``` as a dependency:
+
+```
+.Package(url: "https://github.com/pixelspark/rethink-swift.git", majorVersion: 0)
+```
+
+#### Manual
+
+Drag Rethink.xcodeproj into your own project, then add Rethink or Rethink iOS as dependency (build targets) and link to it.
 You should then be able to simply 'import Rethink' from Swift code.
 
 ### License
