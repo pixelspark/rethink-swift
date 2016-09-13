@@ -1,2 +1,5 @@
+.DS_Store
+/.build
+/Packages
 Rethink.xcodeproj/project.xcworkspace/xcuserdata
 Rethink.xcodeproj/xcuserdata
