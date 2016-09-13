@@ -7,28 +7,28 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		65368F881CC6CDE700302942 /* SCRAM.h in Headers */ = {isa = PBXBuildFile; fileRef = 65368F871CC6CDE700302942 /* SCRAM.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		65368F8A1CC6CE1600302942 /* SCRAM.m in Sources */ = {isa = PBXBuildFile; fileRef = 65368F891CC6CE1600302942 /* SCRAM.m */; };
+		29CA96E21D8876EB0027D914 /* GCDAsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 29CA96E01D8876EB0027D914 /* GCDAsyncSocket.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		29CA96FC1D8877040027D914 /* SCRAM.h in Headers */ = {isa = PBXBuildFile; fileRef = 29CA96FA1D8877040027D914 /* SCRAM.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		29CA970D1D887C460027D914 /* GCDAsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 65B3CC441CA1C39C003FC6DF /* GCDAsyncSocket.m */; };
+		29CA970E1D887C480027D914 /* GCDAsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 65B3CC441CA1C39C003FC6DF /* GCDAsyncSocket.m */; };
+		29CA970F1D887C5D0027D914 /* SCRAM.m in Sources */ = {isa = PBXBuildFile; fileRef = 65368F891CC6CE1600302942 /* SCRAM.m */; };
+		29CA97101D887C5E0027D914 /* SCRAM.m in Sources */ = {isa = PBXBuildFile; fileRef = 65368F891CC6CE1600302942 /* SCRAM.m */; };
+		29CA97111D887C740027D914 /* SCRAM.h in Headers */ = {isa = PBXBuildFile; fileRef = 29CA96FA1D8877040027D914 /* SCRAM.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		29CA97121D887C7D0027D914 /* GCDAsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 29CA96E01D8876EB0027D914 /* GCDAsyncSocket.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		655E10F61CB64E63008E3057 /* ReArguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655E10F51CB64E63008E3057 /* ReArguments.swift */; };
-		65646BAB1D577F6100E58137 /* GCDAsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 65B3CC441CA1C39C003FC6DF /* GCDAsyncSocket.m */; };
 		65646BAC1D577F6100E58137 /* Rethink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65F739EB1BC9505B00B5E62D /* Rethink.swift */; };
 		65646BAD1D577F6100E58137 /* ReConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A115121BD0D3C9007BC661 /* ReConnection.swift */; };
 		65646BAE1D577F6100E58137 /* ReProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A115151BD0D4B8007BC661 /* ReProtocol.swift */; };
 		65646BAF1D577F6100E58137 /* ReDatum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A115241BD2B364007BC661 /* ReDatum.swift */; };
 		65646BB01D577F6100E58137 /* ReArguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 655E10F51CB64E63008E3057 /* ReArguments.swift */; };
-		65646BB11D577F6100E58137 /* SCRAM.m in Sources */ = {isa = PBXBuildFile; fileRef = 65368F891CC6CE1600302942 /* SCRAM.m */; };
 		65646BB21D577F6100E58137 /* ReSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 658278531D4FD78200D36512 /* ReSocket.swift */; };
 		65646BB31D577F6100E58137 /* ReResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 658278551D4FD86100D36512 /* ReResponse.swift */; };
 		65646BB41D577F6B00E58137 /* Rethink.h in Headers */ = {isa = PBXBuildFile; fileRef = 65F739D41BC9502400B5E62D /* Rethink.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		65646BB51D577F7F00E58137 /* GCDAsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 65B3CC431CA1C39C003FC6DF /* GCDAsyncSocket.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		65646BB61D577F8200E58137 /* SCRAM.h in Headers */ = {isa = PBXBuildFile; fileRef = 65368F871CC6CDE700302942 /* SCRAM.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		658278541D4FD78200D36512 /* ReSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 658278531D4FD78200D36512 /* ReSocket.swift */; };
 		658278561D4FD86100D36512 /* ReResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 658278551D4FD86100D36512 /* ReResponse.swift */; };
 		65A115131BD0D3C9007BC661 /* ReConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A115121BD0D3C9007BC661 /* ReConnection.swift */; };
 		65A115161BD0D4B8007BC661 /* ReProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A115151BD0D4B8007BC661 /* ReProtocol.swift */; };
 		65A115251BD2B364007BC661 /* ReDatum.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A115241BD2B364007BC661 /* ReDatum.swift */; };
-		65B3CC451CA1C39C003FC6DF /* GCDAsyncSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 65B3CC431CA1C39C003FC6DF /* GCDAsyncSocket.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		65B3CC461CA1C39C003FC6DF /* GCDAsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 65B3CC441CA1C39C003FC6DF /* GCDAsyncSocket.m */; };
 		65F739D51BC9502400B5E62D /* Rethink.h in Headers */ = {isa = PBXBuildFile; fileRef = 65F739D41BC9502400B5E62D /* Rethink.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		65F739DC1BC9502400B5E62D /* Rethink.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65F739D11BC9502400B5E62D /* Rethink.framework */; };
 		65F739E11BC9502400B5E62D /* RethinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65F739E01BC9502400B5E62D /* RethinkTests.swift */; };
@@ -36,6 +36,34 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		29CA971B1D887CCA0027D914 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 65F739C81BC9502400B5E62D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 29CA96DD1D8876EB0027D914;
+			remoteInfo = GCDAsyncSocket;
+		};
+		29CA971D1D887CCE0027D914 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 65F739C81BC9502400B5E62D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 29CA96F71D8877040027D914;
+			remoteInfo = SCRAM;
+		};
+		29CA971F1D887CDB0027D914 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 65F739C81BC9502400B5E62D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 29CA96EA1D8876F70027D914;
+			remoteInfo = "GCDAsyncSocket iOS";
+		};
+		29CA97211D887CDE0027D914 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 65F739C81BC9502400B5E62D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 29CA97041D8877100027D914;
+			remoteInfo = "SCRAM iOS";
+		};
 		65F739DD1BC9502400B5E62D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 65F739C81BC9502400B5E62D /* Project object */;
@@ -46,7 +74,14 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		65368F871CC6CDE700302942 /* SCRAM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SCRAM.h; path = Sources/SCRAM/include/SCRAM.h; sourceTree = SOURCE_ROOT; };
+		29CA96DE1D8876EB0027D914 /* GCDAsyncSocket.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = GCDAsyncSocket.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		29CA96E01D8876EB0027D914 /* GCDAsyncSocket.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = GCDAsyncSocket.h; path = include/GCDAsyncSocket.h; sourceTree = "<group>"; };
+		29CA96E11D8876EB0027D914 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		29CA96EB1D8876F70027D914 /* GCDAsyncSocket.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = GCDAsyncSocket.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		29CA96F81D8877040027D914 /* SCRAM.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SCRAM.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		29CA96FA1D8877040027D914 /* SCRAM.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SCRAM.h; path = include/SCRAM.h; sourceTree = "<group>"; };
+		29CA96FB1D8877040027D914 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		29CA97051D8877100027D914 /* SCRAM.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SCRAM.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		65368F891CC6CE1600302942 /* SCRAM.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SCRAM.m; path = Sources/SCRAM/SCRAM.m; sourceTree = SOURCE_ROOT; };
 		655E10F51CB64E63008E3057 /* ReArguments.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ReArguments.swift; path = Sources/Rethink/ReArguments.swift; sourceTree = SOURCE_ROOT; };
 		65646BA31D577F2F00E58137 /* Rethink.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Rethink.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -55,7 +90,6 @@
 		65A115121BD0D3C9007BC661 /* ReConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ReConnection.swift; path = Sources/Rethink/ReConnection.swift; sourceTree = SOURCE_ROOT; };
 		65A115151BD0D4B8007BC661 /* ReProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ReProtocol.swift; path = Sources/Rethink/ReProtocol.swift; sourceTree = SOURCE_ROOT; };
 		65A115241BD2B364007BC661 /* ReDatum.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ReDatum.swift; path = Sources/Rethink/ReDatum.swift; sourceTree = SOURCE_ROOT; };
-		65B3CC431CA1C39C003FC6DF /* GCDAsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GCDAsyncSocket.h; path = Sources/GCDAsyncSocket/include/GCDAsyncSocket.h; sourceTree = SOURCE_ROOT; };
 		65B3CC441CA1C39C003FC6DF /* GCDAsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GCDAsyncSocket.m; path = Sources/GCDAsyncSocket/GCDAsyncSocket.m; sourceTree = SOURCE_ROOT; };
 		65F739D11BC9502400B5E62D /* Rethink.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Rethink.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		65F739D41BC9502400B5E62D /* Rethink.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Rethink.h; path = Sources/Rethink/Rethink.h; sourceTree = SOURCE_ROOT; };
@@ -68,6 +102,34 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		29CA96DA1D8876EB0027D914 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		29CA96E71D8876F70027D914 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		29CA96F41D8877040027D914 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		29CA97011D8877100027D914 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		65646B9F1D577F2F00E58137 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -93,13 +155,37 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		29CA96DF1D8876EB0027D914 /* GCDAsyncSocket */ = {
+			isa = PBXGroup;
+			children = (
+				29CA96E01D8876EB0027D914 /* GCDAsyncSocket.h */,
+				65B3CC441CA1C39C003FC6DF /* GCDAsyncSocket.m */,
+				29CA96E11D8876EB0027D914 /* Info.plist */,
+			);
+			name = GCDAsyncSocket;
+			path = Sources/GCDAsyncSocket;
+			sourceTree = "<group>";
+		};
+		29CA96F91D8877040027D914 /* SCRAM */ = {
+			isa = PBXGroup;
+			children = (
+				29CA96FA1D8877040027D914 /* SCRAM.h */,
+				65368F891CC6CE1600302942 /* SCRAM.m */,
+				29CA96FB1D8877040027D914 /* Info.plist */,
+			);
+			name = SCRAM;
+			path = Sources/SCRAM;
+			sourceTree = "<group>";
+		};
 		65F739C71BC9502400B5E62D = {
 			isa = PBXGroup;
 			children = (
 				65F739ED1BCA695F00B5E62D /* README.md */,
-				65F739D21BC9502400B5E62D /* Products */,
 				65F739D31BC9502400B5E62D /* Rethink */,
+				29CA96DF1D8876EB0027D914 /* GCDAsyncSocket */,
+				29CA96F91D8877040027D914 /* SCRAM */,
 				65F739DF1BC9502400B5E62D /* RethinkTests */,
+				65F739D21BC9502400B5E62D /* Products */,
 			);
 			sourceTree = "<group>";
 		};
@@ -109,6 +195,10 @@
 				65F739D11BC9502400B5E62D /* Rethink.framework */,
 				65F739DB1BC9502400B5E62D /* RethinkTests.xctest */,
 				65646BA31D577F2F00E58137 /* Rethink.framework */,
+				29CA96DE1D8876EB0027D914 /* GCDAsyncSocket.framework */,
+				29CA96EB1D8876F70027D914 /* GCDAsyncSocket.framework */,
+				29CA96F81D8877040027D914 /* SCRAM.framework */,
+				29CA97051D8877100027D914 /* SCRAM.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -116,19 +206,15 @@
 		65F739D31BC9502400B5E62D /* Rethink */ = {
 			isa = PBXGroup;
 			children = (
-				65B3CC431CA1C39C003FC6DF /* GCDAsyncSocket.h */,
-				65B3CC441CA1C39C003FC6DF /* GCDAsyncSocket.m */,
 				65F739D41BC9502400B5E62D /* Rethink.h */,
-				65F739D61BC9502400B5E62D /* Info.plist */,
 				65F739EB1BC9505B00B5E62D /* Rethink.swift */,
 				65A115121BD0D3C9007BC661 /* ReConnection.swift */,
 				65A115151BD0D4B8007BC661 /* ReProtocol.swift */,
 				65A115241BD2B364007BC661 /* ReDatum.swift */,
 				655E10F51CB64E63008E3057 /* ReArguments.swift */,
-				65368F871CC6CDE700302942 /* SCRAM.h */,
-				65368F891CC6CE1600302942 /* SCRAM.m */,
 				658278531D4FD78200D36512 /* ReSocket.swift */,
 				658278551D4FD86100D36512 /* ReResponse.swift */,
+				65F739D61BC9502400B5E62D /* Info.plist */,
 			);
 			path = Rethink;
 			sourceTree = "<group>";
@@ -146,13 +232,43 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		29CA96DB1D8876EB0027D914 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				29CA96E21D8876EB0027D914 /* GCDAsyncSocket.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		29CA96E81D8876F70027D914 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				29CA97121D887C7D0027D914 /* GCDAsyncSocket.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		29CA96F51D8877040027D914 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				29CA96FC1D8877040027D914 /* SCRAM.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		29CA97021D8877100027D914 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				29CA97111D887C740027D914 /* SCRAM.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		65646BA01D577F2F00E58137 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				65646BB41D577F6B00E58137 /* Rethink.h in Headers */,
-				65646BB51D577F7F00E58137 /* GCDAsyncSocket.h in Headers */,
-				65646BB61D577F8200E58137 /* SCRAM.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -161,14 +277,84 @@
 			buildActionMask = 2147483647;
 			files = (
 				65F739D51BC9502400B5E62D /* Rethink.h in Headers */,
-				65368F881CC6CDE700302942 /* SCRAM.h in Headers */,
-				65B3CC451CA1C39C003FC6DF /* GCDAsyncSocket.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		29CA96DD1D8876EB0027D914 /* GCDAsyncSocket */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 29CA96E51D8876EB0027D914 /* Build configuration list for PBXNativeTarget "GCDAsyncSocket" */;
+			buildPhases = (
+				29CA96D91D8876EB0027D914 /* Sources */,
+				29CA96DA1D8876EB0027D914 /* Frameworks */,
+				29CA96DB1D8876EB0027D914 /* Headers */,
+				29CA96DC1D8876EB0027D914 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GCDAsyncSocket;
+			productName = GCDAsyncSocket;
+			productReference = 29CA96DE1D8876EB0027D914 /* GCDAsyncSocket.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		29CA96EA1D8876F70027D914 /* GCDAsyncSocket iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 29CA96F01D8876F70027D914 /* Build configuration list for PBXNativeTarget "GCDAsyncSocket iOS" */;
+			buildPhases = (
+				29CA96E61D8876F70027D914 /* Sources */,
+				29CA96E71D8876F70027D914 /* Frameworks */,
+				29CA96E81D8876F70027D914 /* Headers */,
+				29CA96E91D8876F70027D914 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "GCDAsyncSocket iOS";
+			productName = "GCDAsyncSocket iOS";
+			productReference = 29CA96EB1D8876F70027D914 /* GCDAsyncSocket.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		29CA96F71D8877040027D914 /* SCRAM */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 29CA96FD1D8877040027D914 /* Build configuration list for PBXNativeTarget "SCRAM" */;
+			buildPhases = (
+				29CA96F31D8877040027D914 /* Sources */,
+				29CA96F41D8877040027D914 /* Frameworks */,
+				29CA96F51D8877040027D914 /* Headers */,
+				29CA96F61D8877040027D914 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SCRAM;
+			productName = SCRAM;
+			productReference = 29CA96F81D8877040027D914 /* SCRAM.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		29CA97041D8877100027D914 /* SCRAM iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 29CA970A1D8877100027D914 /* Build configuration list for PBXNativeTarget "SCRAM iOS" */;
+			buildPhases = (
+				29CA97001D8877100027D914 /* Sources */,
+				29CA97011D8877100027D914 /* Frameworks */,
+				29CA97021D8877100027D914 /* Headers */,
+				29CA97031D8877100027D914 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "SCRAM iOS";
+			productName = "SCRAM iOS";
+			productReference = 29CA97051D8877100027D914 /* SCRAM.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 		65646BA21D577F2F00E58137 /* Rethink iOS */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 65646BAA1D577F3000E58137 /* Build configuration list for PBXNativeTarget "Rethink iOS" */;
@@ -181,6 +367,8 @@
 			buildRules = (
 			);
 			dependencies = (
+				29CA97201D887CDB0027D914 /* PBXTargetDependency */,
+				29CA97221D887CDE0027D914 /* PBXTargetDependency */,
 			);
 			name = "Rethink iOS";
 			productName = "Rethink iOS";
@@ -199,6 +387,8 @@
 			buildRules = (
 			);
 			dependencies = (
+				29CA971C1D887CCA0027D914 /* PBXTargetDependency */,
+				29CA971E1D887CCE0027D914 /* PBXTargetDependency */,
 			);
 			name = Rethink;
 			productName = Rethink;
@@ -233,6 +423,22 @@
 				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = Pixelspark;
 				TargetAttributes = {
+					29CA96DD1D8876EB0027D914 = {
+						CreatedOnToolsVersion = 8.0;
+						ProvisioningStyle = Automatic;
+					};
+					29CA96EA1D8876F70027D914 = {
+						CreatedOnToolsVersion = 8.0;
+						ProvisioningStyle = Automatic;
+					};
+					29CA96F71D8877040027D914 = {
+						CreatedOnToolsVersion = 8.0;
+						ProvisioningStyle = Automatic;
+					};
+					29CA97041D8877100027D914 = {
+						CreatedOnToolsVersion = 8.0;
+						ProvisioningStyle = Automatic;
+					};
 					65646BA21D577F2F00E58137 = {
 						CreatedOnToolsVersion = 8.0;
 						DevelopmentTeam = 2T2T7HAA8S;
@@ -261,13 +467,45 @@
 			projectRoot = "";
 			targets = (
 				65F739D01BC9502400B5E62D /* Rethink */,
-				65F739DA1BC9502400B5E62D /* RethinkTests */,
 				65646BA21D577F2F00E58137 /* Rethink iOS */,
+				65F739DA1BC9502400B5E62D /* RethinkTests */,
+				29CA96DD1D8876EB0027D914 /* GCDAsyncSocket */,
+				29CA96EA1D8876F70027D914 /* GCDAsyncSocket iOS */,
+				29CA96F71D8877040027D914 /* SCRAM */,
+				29CA97041D8877100027D914 /* SCRAM iOS */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		29CA96DC1D8876EB0027D914 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		29CA96E91D8876F70027D914 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		29CA96F61D8877040027D914 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		29CA97031D8877100027D914 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		65646BA11D577F2F00E58137 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -292,17 +530,47 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		29CA96D91D8876EB0027D914 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				29CA970D1D887C460027D914 /* GCDAsyncSocket.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		29CA96E61D8876F70027D914 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				29CA970E1D887C480027D914 /* GCDAsyncSocket.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		29CA96F31D8877040027D914 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				29CA970F1D887C5D0027D914 /* SCRAM.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		29CA97001D8877100027D914 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				29CA97101D887C5E0027D914 /* SCRAM.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		65646B9E1D577F2F00E58137 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				65646BAB1D577F6100E58137 /* GCDAsyncSocket.m in Sources */,
 				65646BAC1D577F6100E58137 /* Rethink.swift in Sources */,
 				65646BAD1D577F6100E58137 /* ReConnection.swift in Sources */,
 				65646BAE1D577F6100E58137 /* ReProtocol.swift in Sources */,
 				65646BAF1D577F6100E58137 /* ReDatum.swift in Sources */,
 				65646BB01D577F6100E58137 /* ReArguments.swift in Sources */,
-				65646BB11D577F6100E58137 /* SCRAM.m in Sources */,
 				65646BB21D577F6100E58137 /* ReSocket.swift in Sources */,
 				65646BB31D577F6100E58137 /* ReResponse.swift in Sources */,
 			);
@@ -315,10 +583,8 @@
 				65A115131BD0D3C9007BC661 /* ReConnection.swift in Sources */,
 				658278541D4FD78200D36512 /* ReSocket.swift in Sources */,
 				65F739EC1BC9505B00B5E62D /* Rethink.swift in Sources */,
-				65368F8A1CC6CE1600302942 /* SCRAM.m in Sources */,
 				65A115251BD2B364007BC661 /* ReDatum.swift in Sources */,
 				655E10F61CB64E63008E3057 /* ReArguments.swift in Sources */,
-				65B3CC461CA1C39C003FC6DF /* GCDAsyncSocket.m in Sources */,
 				658278561D4FD86100D36512 /* ReResponse.swift in Sources */,
 				65A115161BD0D4B8007BC661 /* ReProtocol.swift in Sources */,
 			);
@@ -335,6 +601,26 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		29CA971C1D887CCA0027D914 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 29CA96DD1D8876EB0027D914 /* GCDAsyncSocket */;
+			targetProxy = 29CA971B1D887CCA0027D914 /* PBXContainerItemProxy */;
+		};
+		29CA971E1D887CCE0027D914 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 29CA96F71D8877040027D914 /* SCRAM */;
+			targetProxy = 29CA971D1D887CCE0027D914 /* PBXContainerItemProxy */;
+		};
+		29CA97201D887CDB0027D914 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 29CA96EA1D8876F70027D914 /* GCDAsyncSocket iOS */;
+			targetProxy = 29CA971F1D887CDB0027D914 /* PBXContainerItemProxy */;
+		};
+		29CA97221D887CDE0027D914 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 29CA97041D8877100027D914 /* SCRAM iOS */;
+			targetProxy = 29CA97211D887CDE0027D914 /* PBXContainerItemProxy */;
+		};
 		65F739DE1BC9502400B5E62D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 65F739D01BC9502400B5E62D /* Rethink */;
@@ -343,6 +629,196 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		29CA96E31D8876EB0027D914 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_VERSION = A;
+				INFOPLIST_FILE = "$(SRCROOT)/Sources/GCDAsyncSocket/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.pixelspark.Rethink.GCDAsyncSocket;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		29CA96E41D8876EB0027D914 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_VERSION = A;
+				INFOPLIST_FILE = "$(SRCROOT)/Sources/GCDAsyncSocket/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.pixelspark.Rethink.GCDAsyncSocket;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		29CA96F11D8876F70027D914 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = "$(SRCROOT)/Sources/GCDAsyncSocket/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "nl.pixelspark.Rethink.GCDAsyncSocket-iOS";
+				PRODUCT_NAME = GCDAsyncSocket;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		29CA96F21D8876F70027D914 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = "$(SRCROOT)/Sources/GCDAsyncSocket/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "nl.pixelspark.Rethink.GCDAsyncSocket-iOS";
+				PRODUCT_NAME = GCDAsyncSocket;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		29CA96FE1D8877040027D914 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_VERSION = A;
+				INFOPLIST_FILE = "$(SRCROOT)/Sources/SCRAM/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.pixelspark.Rethink.SCRAM;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		29CA96FF1D8877040027D914 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_VERSION = A;
+				INFOPLIST_FILE = "$(SRCROOT)/Sources/SCRAM/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.pixelspark.Rethink.SCRAM;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		29CA970B1D8877100027D914 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = "$(SRCROOT)/Sources/SCRAM/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "nl.pixelspark.Rethink.SCRAM-iOS";
+				PRODUCT_NAME = SCRAM;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		29CA970C1D8877100027D914 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = "$(SRCROOT)/Sources/SCRAM/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "nl.pixelspark.Rethink.SCRAM-iOS";
+				PRODUCT_NAME = SCRAM;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		65646BA81D577F3000E58137 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -563,6 +1039,42 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		29CA96E51D8876EB0027D914 /* Build configuration list for PBXNativeTarget "GCDAsyncSocket" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				29CA96E31D8876EB0027D914 /* Debug */,
+				29CA96E41D8876EB0027D914 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		29CA96F01D8876F70027D914 /* Build configuration list for PBXNativeTarget "GCDAsyncSocket iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				29CA96F11D8876F70027D914 /* Debug */,
+				29CA96F21D8876F70027D914 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		29CA96FD1D8877040027D914 /* Build configuration list for PBXNativeTarget "SCRAM" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				29CA96FE1D8877040027D914 /* Debug */,
+				29CA96FF1D8877040027D914 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		29CA970A1D8877100027D914 /* Build configuration list for PBXNativeTarget "SCRAM iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				29CA970B1D8877100027D914 /* Debug */,
+				29CA970C1D8877100027D914 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		65646BAA1D577F3000E58137 /* Build configuration list for PBXNativeTarget "Rethink iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
