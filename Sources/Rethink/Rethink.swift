@@ -735,6 +735,10 @@ public extension ReQueryValue {
 		return ReDatum(jsonSerialization: [ReTerm.bracket.rawValue, [self.jsonSerialization, key]])
 	}
 
+	public subscript(key: ReQueryValue) -> ReQueryValue {
+		return ReDatum(jsonSerialization: [ReTerm.bracket.rawValue, [self.jsonSerialization, key.jsonSerialization]])
+	}
+
 	public func without(fields: [ReQueryValue]) -> ReQuerySequence {
 		let values = fields.map({ e in return e.jsonSerialization })
 		return ReQuerySequence(jsonSerialization: [ReTerm.without.rawValue, [self.jsonSerialization, [ReTerm.make_array.rawValue, values]]])
