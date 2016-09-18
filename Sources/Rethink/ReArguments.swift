@@ -1,14 +1,14 @@
 import Foundation
 
 public enum ReTableReadMode: String {
-	case Single = "single"
-	case Majority = "majority"
-	case Outdated = "outdated"
+	case single = "single"
+	case majority = "majority"
+	case outdated = "outdated"
 }
 
 public enum ReTableIdentifierFormat: String {
-	case Name = "name"
-	case UUID = "uuid"
+	case name = "name"
+	case uuid = "uuid"
 }
 
 /** Optional arguments are instances of ReArg. */
@@ -40,8 +40,8 @@ public enum ReFilterArg: ReArg {
 }
 
 public enum ReTableDurability: String {
-	case Soft = "soft"
-	case Hard = "hard"
+	case soft = "soft"
+	case hard = "hard"
 }
 
 public enum ReTableCreateArg: ReArg {
@@ -195,19 +195,19 @@ public enum ReEqJoinArg: ReArg {
 }
 
 public enum ReDurability: String {
-	case Hard = "hard"
-	case Soft = "soft"
+	case hard = "hard"
+	case soft = "soft"
 }
 
 public enum ReConflictResolution: String {
 	/** Do not insert the new document and record the conflict as an error. This is the default. */
-	case Error = "error"
+	case error = "error"
 
 	/** Replace the old document in its entirety with the new one. */
-	case Replace = "replace"
+	case replace = "replace"
 
 	/** Update fields of the old document with fields from the new one. */
-	case Update = "update"
+	case update = "update"
 }
 
 public enum ReInsertArg: ReArg {
@@ -271,16 +271,16 @@ public enum ReDeleteArg: ReArg {
 }
 
 public enum ReUnit: String {
-	case Meter = "m"
-	case Kilometer = "km"
-	case InternationalMile = "mi"
-	case NauticalMile = "nm"
-	case InternationalFoot = "ft"
+	case meter = "m"
+	case kilometer = "km"
+	case internationalMile = "mi"
+	case nauticalMile = "nm"
+	case internationalFoot = "ft"
 }
 
 public enum ReGeoSystem: String {
-	case WGS84 = "WGS84"
-	case UnitSphere = "unit_sphere"
+	case wgs84 = "WGS84"
+	case unitSphere = "unit_sphere"
 }
 
 public enum ReCircleArg: ReArg {

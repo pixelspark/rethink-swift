@@ -565,11 +565,11 @@ public class ReQueryRow: ReDatum {
 }
 
 public enum ReTypeName: String {
-	case Number = "number"
-	case String = "string"
-	case Array = "array"
-	case Object = "object"
-	case Binary = "binary"
+	case number = "number"
+	case string = "string"
+	case array = "array"
+	case object = "object"
+	case binary = "binary"
 }
 
 public extension ReQuery {
