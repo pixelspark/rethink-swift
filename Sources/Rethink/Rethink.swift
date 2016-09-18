@@ -808,10 +808,14 @@ public typealias RePredicate = (ReQueryValue) -> (ReQuery)
 public class ReQueryLambda: ReQuery {
 	public let jsonSerialization: Any
 	private static var parameterCounter = 0
+	private static let mutex = Mutex()
 
 	init(_ block: RePredicate) {
-		ReQueryLambda.parameterCounter += 1
-		let p = ReQueryLambda.parameterCounter
+		let p = ReQueryLambda.mutex.locked { () -> Int in 
+			ReQueryLambda.parameterCounter += 1
+			return ReQueryLambda.parameterCounter
+		}
+
 		let parameter = ReDatum(jsonSerialization: p)
 		let parameterAccess = ReDatum(jsonSerialization: [ReTerm.var.rawValue, [parameter.jsonSerialization]])
 
