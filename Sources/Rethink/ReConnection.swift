@@ -102,7 +102,7 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 								return callback(nil)
 							}
 							else {
-								let e = ReError.fatal("Handshake failed, server returned: \(s)")
+								let e = ReError.fatal("Handshake failed, server returned: \(s ?? "")")
 								self.state = .error(e)
 								return callback(e)
 							}
@@ -137,7 +137,7 @@ public class ReConnection: NSObject, GCDAsyncSocketDelegate {
 									}
 								}
 								else {
-									let e = ReError.fatal("Handshake failed, server returned: \(s)")
+									let e = ReError.fatal("Handshake failed, server returned: \(s ?? "")")
 									self.state = .error(e)
 									return callback(e)
 								}
